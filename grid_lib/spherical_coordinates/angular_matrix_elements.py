@@ -1,7 +1,7 @@
 import numpy as np
 import time
 from numpy.polynomial import legendre
-from scipy.special import eval_legendre as Legendre, sph_harm, spherical_jn
+from scipy.special import eval_legendre as Legendre, sph_harm_y, spherical_jn
 from pathlib import Path
 
 
@@ -187,14 +187,14 @@ class AngularMatrixElements:
 
     def l1m1_sinth_ddtheta_l2m2_Lebedev(self, Yl1m1_cc, Yl2m2, l1, m1, l2, m2):
         sinth_ddtheta_l2m2 = (
-            m2 * self.cos_th * sph_harm(m2, l2, self.phi, self.theta)
+            m2 * self.cos_th * sph_harm_y(m2, l2, self.phi, self.theta)
         )
         if np.abs(m2 + 1) <= l2:
             sinth_ddtheta_l2m2 += (
                 np.sqrt((l2 - m2) * (l2 + m2 + 1))
                 * self.sin_th
                 * self.exp_m1j_p
-                * sph_harm(m2 + 1, l2, self.phi, self.theta)
+                * sph_harm_y(m2 + 1, l2, self.phi, self.theta)
             )
 
         integrand = Yl1m1_cc * sinth_ddtheta_l2m2
@@ -234,7 +234,7 @@ class AngularMatrixElements:
                 0.5
                 * self.c_lm(l2, m2)
                 * self.cos_th
-                * sph_harm(m2 + 1, l2, self.phi, self.theta)
+                * sph_harm_y(m2 + 1, l2, self.phi, self.theta)
             )
 
         if abs(m2 - 1) <= l2:
@@ -242,7 +242,7 @@ class AngularMatrixElements:
                 0.5
                 * self.c_lm(l2, m2 - 1)
                 * self.cos_th
-                * sph_harm(m2 - 1, l2, self.phi, self.theta)
+                * sph_harm_y(m2 - 1, l2, self.phi, self.theta)
             )
 
         ###############################################################################
@@ -254,14 +254,14 @@ class AngularMatrixElements:
 
     def l1m1_y_pz_l2m2(self, Yl1m1_cc, Yl2m2, l1, m1, l2, m2):
         sinth_ddtheta_l2m2 = (
-            m2 * self.cos_th * sph_harm(m2, l2, self.phi, self.theta)
+            m2 * self.cos_th * sph_harm_y(m2, l2, self.phi, self.theta)
         )
         if np.abs(m2 + 1) <= l2:
             sinth_ddtheta_l2m2 += (
                 np.sqrt((l2 - m2) * (l2 + m2 + 1))
                 * self.sin_th
                 * self.exp_m1j_p
-                * sph_harm(m2 + 1, l2, self.phi, self.theta)
+                * sph_harm_y(m2 + 1, l2, self.phi, self.theta)
             )
 
         integrand = -sinth_ddtheta_l2m2
@@ -282,7 +282,7 @@ class AngularMatrixElements:
                 0.5
                 * self.c_lm(l2, m2)
                 * self.cos_th
-                * sph_harm(m2 + 1, l2, self.phi, self.theta)
+                * sph_harm_y(m2 + 1, l2, self.phi, self.theta)
             )
 
         if abs(m2 - 1) <= l2:
@@ -290,7 +290,7 @@ class AngularMatrixElements:
                 0.5
                 * self.c_lm(l2, m2 - 1)
                 * self.cos_th
-                * sph_harm(m2 - 1, l2, self.phi, self.theta)
+                * sph_harm_y(m2 - 1, l2, self.phi, self.theta)
             )
 
         ###############################################################################
@@ -329,7 +329,7 @@ class AngularMatrixElements:
                 * 0.5
                 * self.c_lm(l2, m2)
                 * self.cos_th
-                * sph_harm(m2 + 1, l2, self.phi, self.theta)
+                * sph_harm_y(m2 + 1, l2, self.phi, self.theta)
             )
 
         if abs(m2 - 1) <= l2:
@@ -338,7 +338,7 @@ class AngularMatrixElements:
                 * 0.5
                 * self.c_lm(l2, m2 - 1)
                 * self.cos_th
-                * sph_harm(m2 - 1, l2, self.phi, self.theta)
+                * sph_harm_y(m2 - 1, l2, self.phi, self.theta)
             )
 
         ###############################################################################
@@ -350,14 +350,14 @@ class AngularMatrixElements:
 
     def l1m1_x_pz_l2m2(self, Yl1m1_cc, Yl2m2, l1, m1, l2, m2):
         sinth_ddtheta_l2m2 = (
-            m2 * self.cos_th * sph_harm(m2, l2, self.phi, self.theta)
+            m2 * self.cos_th * sph_harm_y(m2, l2, self.phi, self.theta)
         )
         if np.abs(m2 + 1) <= l2:
             sinth_ddtheta_l2m2 += (
                 np.sqrt((l2 - m2) * (l2 + m2 + 1))
                 * self.sin_th
                 * self.exp_m1j_p
-                * sph_harm(m2 + 1, l2, self.phi, self.theta)
+                * sph_harm_y(m2 + 1, l2, self.phi, self.theta)
             )
 
         integrand = -sinth_ddtheta_l2m2
@@ -384,7 +384,7 @@ class AngularMatrixElements:
                 * 0.5
                 * self.c_lm(l2, m2)
                 * self.cos_th
-                * sph_harm(m2 + 1, l2, self.phi, self.theta)
+                * sph_harm_y(m2 + 1, l2, self.phi, self.theta)
             )
 
         if abs(m2 - 1) <= l2:
@@ -393,7 +393,7 @@ class AngularMatrixElements:
                 * 0.5
                 * self.c_lm(l2, m2 - 1)
                 * self.cos_th
-                * sph_harm(m2 - 1, l2, self.phi, self.theta)
+                * sph_harm_y(m2 - 1, l2, self.phi, self.theta)
             )
 
         ###############################################################################
@@ -512,9 +512,9 @@ class AngularMatrixElements_l(AngularMatrixElements):
         n_l = self.n_l
 
         for l1 in range(n_l):
-            Yl1m_cc = sph_harm(m, l1, self.phi, self.theta).conj()
+            Yl1m_cc = sph_harm_y(m, l1, self.phi, self.theta).conj()
             for l2 in range(n_l):
-                Yl2m = sph_harm(m, l2, self.phi, self.theta)
+                Yl2m = sph_harm_y(m, l2, self.phi, self.theta)
                 if arr_to_calc_dict["z_Omega"]:
                     self.arr["z_Omega"][l1, l2] = self.l1m1_costh_l2m2(
                         l1, m, l2, m
@@ -585,13 +585,13 @@ class AngularMatrixElements_lm(AngularMatrixElements):
             temp_m1_max = min(l1, self.m_max)
             for m1 in range(-temp_m1_max, temp_m1_max + 1):
                 I = self.I_lm[f"{l1}{m1}"]
-                Yl1m1_cc = sph_harm(m1, l1, self.phi, self.theta).conj()
+                Yl1m1_cc = sph_harm_y(m1, l1, self.phi, self.theta).conj()
                 for l2 in range(l1 - 2, l1 + 3):
                     if l2 >= 0 and l2 <= l_max:
                         temp_m2_max = min(l2, self.m_max)
                         for m2 in range(-temp_m2_max, temp_m2_max + 1):
                             J = self.I_lm[f"{l2}{m2}"]
-                            Yl2m2 = sph_harm(m2, l2, self.phi, self.theta)
+                            Yl2m2 = sph_harm_y(m2, l2, self.phi, self.theta)
 
                             if arr_to_calc_dict["x_Omega"]:
                                 self.arr["x_Omega"][
@@ -781,7 +781,7 @@ class AngularMatrixElements_lmr(AngularMatrixElements):
         for L in range(2 * nl):
             for M in range(-L, L + 1):
                 I = self.I_lm[f"{L}{M}"]
-                self.sph_harms[I, :] = sph_harm(M, L, phi, theta)
+                self.sph_harms[I, :] = sph_harm_y(M, L, phi, theta)
 
         sph_jn = np.zeros((2 * self.n_l, self.nr))
         sph_jn2 = np.zeros((2 * self.n_l, self.nr))
@@ -1104,7 +1104,7 @@ class AngularMatrixElements_orders(AngularMatrixElements):
         theta_k = self.theta_k
         phi_k = self.phi_k
 
-        Y_k = sph_harm(M, L, phi_k, theta_k) * (1j) ** L
+        Y_k = sph_harm_y(M, L, phi_k, theta_k) * (1j) ** L
         if arr_to_calc_dict["expkr_costh"]:
             cond1 = -m1 - M + m2 == 0
             cond2 = (np.abs(l1 - L) <= l2 + 1) and (l2 - 1 <= l1 + L)
@@ -1328,7 +1328,7 @@ class AngularMatrixElements_lmr_orders(AngularMatrixElements_orders):
         for L_ in range(2 * self.n_l):
             for M in range(-L_, L_ + 1):
                 I = self.I_lm[f"{L_}{M}"]
-                self.sph_harms[I, :] = sph_harm(M, L_, self.phi, self.theta)
+                self.sph_harms[I, :] = sph_harm_y(M, L_, self.phi, self.theta)
 
         self.sph_jn = np.zeros((NL, self.nr))
         self.sph_jn2 = np.zeros((NL, self.nr))
@@ -1389,7 +1389,7 @@ class AngularMatrixElements_lr_orders(AngularMatrixElements_orders):
         for L_ in range(2 * self.n_l):
             for M in range(-L_, L_ + 1):
                 I = self.I_lm[f"{L_}{M}"]
-                self.sph_harms[I, :] = sph_harm(M, L_, self.phi, self.theta)
+                self.sph_harms[I, :] = sph_harm_y(M, L_, self.phi, self.theta)
 
         self.sph_jn = np.zeros((self.NL, self.nr))
         self.sph_jn2 = np.zeros((self.NL, self.nr))
@@ -1443,7 +1443,7 @@ class AngularMatrixElements_lr_Coulomb(AngularMatrixElements):
         )
 
         for L_ in range(n_sph_harms):
-            self.sph_harms[L_, :] = sph_harm(0, L_, self.phi, self.theta)
+            self.sph_harms[L_, :] = sph_harm_y(0, L_, self.phi, self.theta)
 
         if True in arr_to_calc_dict.values():
             self.setup_l_matrix_elements(arr_to_calc_dict, m)
@@ -1511,7 +1511,7 @@ class AngularMatrixElements_lmr_Coulomb(AngularMatrixElements):
             temp_M_max = min(L_, m_max)
             for M_ in range(-temp_M_max, temp_M_max + 1):
                 I = self.I_lm[f"{L_}{M_}"]
-                self.sph_harms[I, :] = sph_harm(M_, L_, self.phi, self.theta)
+                self.sph_harms[I, :] = sph_harm_y(M_, L_, self.phi, self.theta)
 
         if True in arr_to_calc_dict.values():
             self.setup_lm_matrix_elements(arr_to_calc_dict)
@@ -1662,7 +1662,7 @@ def A(l1, l2, l3):
 
 def f_r(sph_jn, L, M, theta_k, phi_k, sign):
     C = 4 * np.pi * (sign * 1j) ** L
-    Y = sph_harm(M, L, phi_k, theta_k)
+    Y = sph_harm_y(M, L, phi_k, theta_k)
     return C * Y * sph_jn
 
 
