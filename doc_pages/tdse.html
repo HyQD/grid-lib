@@ -1,0 +1,214 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>5. The time-dependent Schrödinger equation &mdash; Pseudospectral TDSE 0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-dropdown.css?v=995e94df" />
+      <link rel="stylesheet" type="text/css" href="../_static/panels-bootstrap.min.css?v=21c0b90a" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=9ae11f4d" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=837179f8"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="4. The time-independent Schrödinger equation" href="tise.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Pseudospectral TDSE
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+    
+              <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">1. Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Theory</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="theory.html">1. Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="spherical_coordinates.html">2. Spherical coordinates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sph.html">3. Spherical harmonics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tise.html">4. The time-independent Schrödinger equation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">5. The time-dependent Schrödinger equation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id1">5.1. The time-dependent Schrödinger equation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#classical-electromagnetic-fields">5.2. Classical electromagnetic fields</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#the-dipole-approximation">5.2.1. The dipole approximation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#length-gauge">5.2.2. Length gauge</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#velocity-gauge">5.2.3. Velocity gauge</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#beyond-dipole-approximation">5.3. Beyond dipole approximation</a></li>
+</ul>
+</li>
+</ul>
+
+
+    
+
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Pseudospectral TDSE</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active"><span class="section-number">5. </span>The time-dependent Schrödinger equation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/doc_pages/tdse.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="the-time-dependent-schrodinger-equation">
+<span id="tdse-label"></span><h1><span class="section-number">5. </span>The time-dependent Schrödinger equation<a class="headerlink" href="#the-time-dependent-schrodinger-equation" title="Link to this heading"></a></h1>
+<section id="id1">
+<h2><span class="section-number">5.1. </span>The time-dependent Schrödinger equation<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<p>The time-dependent Schrödinger equation for a single particle moving in a potential <span class="math notranslate nohighlight">\(V(\mathbf{r})\)</span> interacting with a (classical) electromagnetic field given by the vector potential
+<span class="math notranslate nohighlight">\(A(\mathbf{r},t)\)</span> is, in the Coulomb gauge (<span class="math notranslate nohighlight">\(\nabla \cdot A(\mathbf{r},t)=0\)</span>), given by</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}i \dot{\Psi}(\mathbf{r}, t) &amp;= \left( \frac{1}{2} \left( \hat{p} + A(\mathbf{r},t) \right)^2 + V(\mathbf{r}) \right) \Psi(\mathbf{r}, t) \\
+&amp;= \left(-\frac{1}{2} \nabla^2 + A(\mathbf{r},t) \cdot \hat{p} + \frac{1}{2}A(\mathbf{r},t)^2 + V(\mathbf{r}) \right) \Psi(\mathbf{r}, t)\end{split}\]</div>
+<p>In spherical coordinates, we parametrize time-dependent wavefunction as</p>
+<div class="math notranslate nohighlight">
+\[\Psi(\mathbf{r},t) = \sum_{l=0}^L \sum_{m=-l}^l \frac{u_{l,m}(r,t)}{r} Y_l^m(\theta, \phi).\]</div>
+<p>Inserting this ansatz into to TDSE yields</p>
+<div class="math notranslate nohighlight">
+\[i \sum_{l,m} \frac{1}{r} \dot{u}_{l,m}(r,t) Y_l^m(\Omega) = \sum_{l,m} \left( \frac{1}{r}\left( -\frac{1}{2}\frac{d^2u_{l,m}(r,t)}{dr^2} + V_l(r)u_{l,m}(r,t) \right)  Y_l^m(\Omega) \right)
++ V_I(\mathbf{r}, t) \Psi(\mathbf{r}, t),\]</div>
+<p>where we have defined the time-dependent interaction potential as</p>
+<div class="math notranslate nohighlight">
+\[V_I(\mathbf{r}, t) = A(\mathbf{r},t) \cdot \hat{p} + \frac{1}{2}A(\mathbf{r},t)^2.\]</div>
+<p>Multiplying through with <span class="math notranslate nohighlight">\(r\)</span> and <span class="math notranslate nohighlight">\(Y_{l^\prime, m^\prime}^*(\Omega)\)</span> and integrating over <span class="math notranslate nohighlight">\(\Omega\)</span> yields equations of motion for <span class="math notranslate nohighlight">\(u_{l,m}(r,t)\)</span>,</p>
+<div class="math notranslate nohighlight">
+\[i \dot{u}_{l^\prime,m^\prime}(r,t) = \left( -\frac{1}{2}  \frac{d^2 u_{l^\prime,m^\prime}(r,t)}{dr^2} + V_{l^\prime}(r)u_{l^\prime,m^\prime}(r,t) \right)
++ r \int Y_{l^\prime, m^\prime}^*(\Omega) V_I(\mathbf{r}, t) \Psi(\mathbf{r}, t) d\Omega\]</div>
+</section>
+<section id="classical-electromagnetic-fields">
+<h2><span class="section-number">5.2. </span>Classical electromagnetic fields<a class="headerlink" href="#classical-electromagnetic-fields" title="Link to this heading"></a></h2>
+<section id="the-dipole-approximation">
+<h3><span class="section-number">5.2.1. </span>The dipole approximation<a class="headerlink" href="#the-dipole-approximation" title="Link to this heading"></a></h3>
+<div class="math notranslate nohighlight">
+\[\begin{split}A(\mathbf{r},t) &amp;\approx A(t) \vec{u}, \\
+\mathcal{E}(\mathbf{r}, t) &amp;\approx -\frac{\partial A(t)}{\partial t} \vec{u}.\end{split}\]</div>
+</section>
+<section id="length-gauge">
+<h3><span class="section-number">5.2.2. </span>Length gauge<a class="headerlink" href="#length-gauge" title="Link to this heading"></a></h3>
+<div class="math notranslate nohighlight">
+\[V_I(\mathbf{r}, t) = \mathcal{E}(t) \vec{u} \cdot \mathbf{r}\]</div>
+<p>Using the integrals over position operators given in (see <a class="reference internal" href="sph.html#sph-label"><span class="std std-ref">Spherical harmonics</span></a>) we have that</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}i \dot{u}_{l^\prime,m^\prime}(r,t) = \left( -\frac{1}{2}  \frac{d^2 u_{l^\prime,m^\prime}(r,t)}{dr^2} + V_{l^\prime}(r)u_{l^\prime,m^\prime}(r,t) \right)
++ r \mathcal{E}(t)
+\begin{cases}
+ \frac{1}{2}\sum_{l, m} (b_{l-1,-m-1}\delta_{l^\prime, l-1}\delta_{m^\prime, m+1}
+- b_{l,m}\delta_{l^\prime, l+1}\delta_{m^\prime, m+1}
+- b_{l-1,m-1}\delta_{l^\prime, l-1}\delta_{m^\prime, m-1}
++ b_{l,-m}\delta_{l^\prime, l+1}\delta_{m^\prime, m-1}) u_{l,m}(r,t), \text{ if } \vec{u} = \vec{e}_x \\
+\frac{i}{2}\sum_{l,m} (b_{l-1,-m-1}\delta_{l^\prime, l-1}\delta_{m^\prime, m+1}
+- b_{l,m}\delta_{l^\prime, l+1}\delta_{m^\prime, m+1}
++ b_{l-1,m-1}\delta_{l^\prime, l-1}\delta_{m^\prime, m-1}
+- b_{l,-m}\delta_{l^\prime, l+1}\delta_{m^\prime, m-1})  u_{l,m}(r,t), \text{ if } \vec{u} = \vec{e}_y \\
+\sum_{l,m} (a_{l,m}\delta_{l^\prime, l+1}\delta_{m^\prime, m}
++ a_{l-1,m}\delta_{l^\prime, l-1}\delta_{m^\prime, m}) u_{l,m}(r,t), \text{ if } \vec{u} = \vec{e}_z
+\end{cases}\end{split}\]</div>
+<p>Similar to the approach we used for the TISE (see <a class="reference internal" href="tise.html#tise-label"><span class="std std-ref">The time-independent Schrödinger equation</span></a>), we introduce the
+new wavefunction <span class="math notranslate nohighlight">\(\phi_{l,m}(x) = \dot{r}(x)^{1/2}u_{l,m}(r(x))\)</span> and discretrize the EOMs with the pseudospectral method, which yields</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}i \dot{\phi}_{l^\prime, m^\prime}(x_i) =
+\sum_{j=1}^{N-1} \left(-\frac{1}{2}  \frac{\tilde{g}^{\prime \prime}_j(x_i)}{\dot{r}(x_i) \dot{r}(x_j)} \tilde{\phi}_{l^\prime,m^\prime}(x_j) \right)
++   V_{l^\prime}(r(x_i))\tilde{\phi}_{l^\prime,m^\prime}(x_i)
++ r(x_i) \mathcal{E}(t)
+\begin{cases}
+ \frac{1}{2}\sum_{l, m} (b_{l-1,-m-1}\delta_{l^\prime, l-1}\delta_{m^\prime, m+1}
+- b_{l,m}\delta_{l^\prime, l+1}\delta_{m^\prime, m+1}
+- b_{l-1,m-1}\delta_{l^\prime, l-1}\delta_{m^\prime, m-1}
++ b_{l,-m}\delta_{l^\prime, l+1}\delta_{m^\prime, m-1}) \tilde{\phi}_{l,m}(x_i), \text{ if } \vec{u} = \vec{e}_x \\
+\frac{i}{2}\sum_{l,m} (b_{l-1,-m-1}\delta_{l^\prime, l-1}\delta_{m^\prime, m+1}
+- b_{l,m}\delta_{l^\prime, l+1}\delta_{m^\prime, m+1}
++ b_{l-1,m-1}\delta_{l^\prime, l-1}\delta_{m^\prime, m-1}
+- b_{l,-m}\delta_{l^\prime, l+1}\delta_{m^\prime, m-1})  \tilde{\phi}_{l,m}(x_i), \text{ if } \vec{u} = \vec{e}_y \\
+\sum_{l,m} (a_{l,m}\delta_{l^\prime, l+1}\delta_{m^\prime, m}
++ a_{l-1,m}\delta_{l^\prime, l-1}\delta_{m^\prime, m}) \tilde{\phi}_{l,m}(x_i), \text{ if } \vec{u} = \vec{e}_z
+\end{cases}\end{split}\]</div>
+</section>
+<section id="velocity-gauge">
+<h3><span class="section-number">5.2.3. </span>Velocity gauge<a class="headerlink" href="#velocity-gauge" title="Link to this heading"></a></h3>
+<div class="math notranslate nohighlight">
+\[V_I(\mathbf{r}, t) = A(t) \cdot \hat{p} + \frac{1}{2}A(t)^2\]</div>
+</section>
+</section>
+<section id="beyond-dipole-approximation">
+<h2><span class="section-number">5.3. </span>Beyond dipole approximation<a class="headerlink" href="#beyond-dipole-approximation" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tise.html" class="btn btn-neutral float-left" title="4. The time-independent Schrödinger equation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Håkon Kristiansen, Einar Aurbakken.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

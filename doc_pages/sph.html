@@ -1,0 +1,238 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3. Spherical harmonics &mdash; Pseudospectral TDSE 0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-dropdown.css?v=995e94df" />
+      <link rel="stylesheet" type="text/css" href="../_static/panels-bootstrap.min.css?v=21c0b90a" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=9ae11f4d" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=837179f8"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="4. The time-independent Schrödinger equation" href="tise.html" />
+    <link rel="prev" title="2. Spherical coordinates" href="spherical_coordinates.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Pseudospectral TDSE
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+    
+              <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">1. Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Theory</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="theory.html">1. Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="spherical_coordinates.html">2. Spherical coordinates</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">3. Spherical harmonics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#properties">3.1. Properties</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#the-effect-of-operators-on-spherical-harmonics">3.1.1. The effect of operators on spherical harmonics</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#special-cases-of-wigner-coefficients">3.2. Special cases of Wigner coefficients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#integrals-over-spherical-harmonics">3.3. Integrals over spherical harmonics</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tise.html">4. The time-independent Schrödinger equation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tdse.html">5. The time-dependent Schrödinger equation</a></li>
+</ul>
+
+
+    
+
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Pseudospectral TDSE</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active"><span class="section-number">3. </span>Spherical harmonics</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/doc_pages/sph.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="spherical-harmonics">
+<span id="sph-label"></span><h1><span class="section-number">3. </span>Spherical harmonics<a class="headerlink" href="#spherical-harmonics" title="Link to this heading"></a></h1>
+<p>We use the convention where the spherical harmonics <span class="math notranslate nohighlight">\(Y_l^m(\theta, \phi)\)</span> are defined as</p>
+<div class="math notranslate nohighlight">
+\[Y_l^m(\theta, \phi) = (-1)^m\sqrt{\frac{2l+1}{4\pi}\frac{(l-m)!}{(l+m)!}}P_l^m(\cos\theta)e^{im\phi},\]</div>
+<p>where <span class="math notranslate nohighlight">\(P_l^m(x)\)</span> are the associated Legendre functions</p>
+<div class="math notranslate nohighlight">
+\[P_l^m(x) = (1-x^2)^{|m|/2} \left(\frac{d}{dx}\right)^{|m|} P_l(x)\]</div>
+<p>and <span class="math notranslate nohighlight">\(P_l(x)\)</span> are the Legendre polynomials</p>
+<div class="math notranslate nohighlight">
+\[P_l(x) = \frac{1}{2^l l!} \left( \frac{d}{dx} \right)^l (x^2-1)^l\]</div>
+<p>In the following we use the notation</p>
+<div class="math notranslate nohighlight">
+\[Y_l^m(\theta, \phi) = Y_l^m(\Omega)\]</div>
+<p>where <span class="math notranslate nohighlight">\(\Omega = (\theta, \phi)\)</span>.</p>
+<section id="properties">
+<h2><span class="section-number">3.1. </span>Properties<a class="headerlink" href="#properties" title="Link to this heading"></a></h2>
+<div class="math notranslate nohighlight">
+\[\int (Y_l^m)^*(\Omega)Y_{l^\prime}^{m^\prime}(\Omega) d\Omega = \delta_{l l^\prime}\delta_{m m^\prime}\]</div>
+<div class="math notranslate nohighlight">
+\[(Y_l^m)^*(\Omega) = (-1)^{m}Y_l^{-m}(\Omega)\]</div>
+<div class="math notranslate nohighlight">
+\[\sum_{m=-l}^l |Y_l^m(\Omega)|^2 = \frac{2l+1}{4 \pi}\]</div>
+<p>The product of two spherical harmonics can be expressed as</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}Y_{l^\prime,m^\prime}(\Omega)Y_{l,m}(\Omega) = \sqrt{\frac{(2l^\prime+1)(2l+1)}{4\pi}}\sum_{L=0}^{\infty}\sum_{M=-L}^{L}(-1)^M\sqrt{2L+1}
+\begin{pmatrix}
+    l^\prime &amp; l &amp; L \\
+    m^\prime &amp; m &amp; -M
+\end{pmatrix}
+\begin{pmatrix}
+    l^\prime &amp; l &amp; L \\
+    0 &amp; 0 &amp; 0
+\end{pmatrix}
+Y_{L,M}(\Omega),\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\begin{pmatrix} l^\prime &amp; l &amp; L \\ m^\prime &amp; m &amp; -M \end{pmatrix}\)</span> are the Wigner 3j symbols <a class="reference external" href="https://mathworld.wolfram.com/Wigner3j-Symbol.html">https://mathworld.wolfram.com/Wigner3j-Symbol.html</a>.</p>
+<section id="the-effect-of-operators-on-spherical-harmonics">
+<h3><span class="section-number">3.1.1. </span>The effect of operators on spherical harmonics<a class="headerlink" href="#the-effect-of-operators-on-spherical-harmonics" title="Link to this heading"></a></h3>
+<div class="math notranslate nohighlight">
+\[\begin{split}\frac{\partial}{\partial \phi}Y_{l,m}(\Omega) &amp;= imY_{l,m}(\Omega), \\
+\frac{\partial}{\partial \theta}Y_{l,m}(\Omega) &amp;= m \frac{\cos{\theta}}{\sin{\theta}}Y_{l,m}(\Omega) + \sqrt{(l-m)(l+m+1)}e^{-i\phi}Y_{l,m+1}(\Omega)\end{split}\]</div>
+<p>Trigonometric functions can be written in terms of spherical harmonics, and their actions on spherical harmonics can then be evaluated using
+the product rule for two spherical harmonics. Some important relations are</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\cos{\theta} &amp;= 2\sqrt{\frac{\pi}{3}}Y_{1,0} \\
+\sin{\theta}e^{-i\phi} &amp;= 2\sqrt{\frac{2\pi}{3}}Y_{1,-1} \\
+\sin{\theta}\cos{\phi} &amp;= \sqrt{\frac{2\pi}{3}}\Bigl[ Y_{1,-1} - Y_{1,1} \Bigr] \\
+\sin{\theta}\sin{\phi} &amp;= \sqrt{\frac{2\pi}{3}}i\Bigl[ Y_{1,-1} + Y_{1,1} \Bigr]\end{split}\]</div>
+<p>The action of the Cartesian position and derivative operators on the spherical harmonics are given by</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}xY_{l,m} &amp;= \frac{1}{2}r\Bigl[\Bigr.b_{l-1,-m-1}Y_{l-1,m+1} - b_{l,m}Y_{l+1,m+1} - b_{l-1,m-1}Y_{l-1,m-1} + b_{l,-m}Y_{l+1,m-1}\Bigl. \Bigr], \\
+yY_{l,m} &amp;= \frac{i}{2}r\Bigl[\Bigr.b_{l-1,-m-1}Y_{l-1,m+1} - b_{l,m}Y_{l+1,m+1} + b_{l-1,m-1}Y_{l-1,m-1} - b_{l,-m}Y_{l+1,m-1}\Bigl. \Bigr], \\
+zY_{l,m} &amp;= r\Bigl[a_{l,m}Y_{l+1,m} + a_{l-1,m}Y_{l-1,m}\Bigr],\end{split}\]</div>
+<p>and</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\frac{\partial}{\partial x} Y_{l,m} &amp;= \cos{\phi}\sin{\theta}Y_{l,m}\frac{\partial}{\partial r}
++ \frac{1}{2} \left[\cos\theta \left( c_{l,m}Y_{l,m+1} - c_{l,m-1}Y_{l,m-1} \right) + m \sin \theta (e^{-i \phi}-e^{i\phi}) Y_{l,m} \right] \frac{1}{r}, \\
+\frac{\partial}{\partial y} Y_{l,m} &amp;= \sin{\phi}\sin{\theta}Y_{l,m}\frac{\partial}{\partial r}
++ \frac{i}{2} \left[-\cos\theta \left( c_{l,m}Y_{l,m+1} + c_{l,m-1}Y_{l,m-1} \right) + m \sin \theta (e^{-i \phi}+e^{i\phi}) Y_{l,m} \right] \frac{1}{r}, \\
+\frac{\partial}{\partial z} Y_{l,m} &amp;= \bigl(a_{l,m}Y_{l+1,m} + a_{l-1,m}Y_{l-1,m}\bigr)\frac{\partial}{\partial r}
++ \Bigl[ -la_{l,m}Y_{l+1,m}  + (l+1)a_{l-1,m}Y_{l-1,m}\Bigr] \frac{1}{r},\end{split}\]</div>
+<p>where we have defined</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}a_{l,m} &amp;= \sqrt{\frac{(l+1)^2-m^2}{(2l+1)(2l+3)}}, \\
+b_{l,m} &amp;= \sqrt{\frac{(l+m+1)(l+m+2)}{(2l+1)(2l+3)}}, \\
+c_{l,m} &amp;= \sqrt{l(l+1) - m(m+1)}.\end{split}\]</div>
+</section>
+</section>
+<section id="special-cases-of-wigner-coefficients">
+<h2><span class="section-number">3.2. </span>Special cases of Wigner coefficients<a class="headerlink" href="#special-cases-of-wigner-coefficients" title="Link to this heading"></a></h2>
+<p>Trigonometric operators can typically be expressed in terms of spherical harmonics with small quantum numbers.
+In these cases the Wigner coefficients can be evaluated explicitly. We give closed form expressions to some simplified Wigner coefficients that can be useful.
+First, we repeat equation (13) in <a class="reference external" href="https://mathworld.wolfram.com/Wigner3j-Symbol.html">https://mathworld.wolfram.com/Wigner3j-Symbol.html</a> in relevant notation:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{pmatrix}
+     l^\prime &amp; l &amp; l^\prime+l \\
+     m^\prime &amp; m &amp; -M
+ \end{pmatrix}
+ = (-1)^{l'-l+M}\Biggl[ \frac{(2l')!(2l)!}{(2l'+2l+1)!}\frac{(l'+l+M)!(l'+l-M)!}{(l'+m')!(l'-m')!(l+m)!(l-m)!} \Biggr]^{1/2}\end{split}\]</div>
+</section>
+<section id="integrals-over-spherical-harmonics">
+<h2><span class="section-number">3.3. </span>Integrals over spherical harmonics<a class="headerlink" href="#integrals-over-spherical-harmonics" title="Link to this heading"></a></h2>
+<p>Using the product formula for the spherical harmonics it follows that</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\int Y_{l',m'}(\Omega) Y_{l,m}(\Omega) Y_{L,M}^*(\Omega) d\Omega = (-1)^M \sqrt{\frac{(2l'+1)(2l+1)(2L+1)}{4\pi}}
+\begin{pmatrix}
+    l^\prime &amp; l &amp; L \\
+    m^\prime &amp; m &amp; -M
+\end{pmatrix}
+\begin{pmatrix}
+    l^\prime &amp; l &amp; L \\
+    0 &amp; 0 &amp; 0
+\end{pmatrix}\end{split}\]</div>
+<div class="math notranslate nohighlight">
+\[\begin{split}\int Y_{l^\prime, m^\prime}^*(\Omega) x Y_{l,m}(\Omega) d\Omega &amp;= \frac{1}{2}r\Bigl[\Bigr.b_{l-1,-m-1}\delta_{l^\prime, l-1}\delta_{m^\prime, m+1}
+- b_{l,m}\delta_{l^\prime, l+1}\delta_{m^\prime, m+1}
+- b_{l-1,m-1}\delta_{l^\prime, l-1}\delta_{m^\prime, m-1}
++ b_{l,-m}\delta_{l^\prime, l+1}\delta_{m^\prime, m-1}\Bigl. \Bigr], \\
+\int Y_{l^\prime, m^\prime}^*(\Omega) y Y_{l,m}(\Omega) d\Omega &amp;= \frac{i}{2}r\Bigl[\Bigr.b_{l-1,-m-1}\delta_{l^\prime, l-1}\delta_{m^\prime, m+1}
+- b_{l,m}\delta_{l^\prime, l+1}\delta_{m^\prime, m+1}
++ b_{l-1,m-1}\delta_{l^\prime, l-1}\delta_{m^\prime, m-1}
+- b_{l,-m}\delta_{l^\prime, l+1}\delta_{m^\prime, m-1} \Bigl. \Bigr], \\
+\int Y_{l^\prime, m^\prime}^*(\Omega) z Y_{l,m}(\Omega) d\Omega &amp;= r\Bigl[a_{l,m}\delta_{l^\prime, l+1}\delta_{m^\prime, m}
++ a_{l-1,m}\delta_{l^\prime, l-1}\delta_{m^\prime, m}\Bigr],\end{split}\]</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="spherical_coordinates.html" class="btn btn-neutral float-left" title="2. Spherical coordinates" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tise.html" class="btn btn-neutral float-right" title="4. The time-independent Schrödinger equation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Håkon Kristiansen, Einar Aurbakken.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
