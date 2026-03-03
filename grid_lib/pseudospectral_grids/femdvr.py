@@ -115,17 +115,25 @@ class FEMDVR:
 
         # Compute second derivative matrix.
         temp = D @ R
-        D2 = -temp.T @ np.diag(w) @ temp  # D2 is the second derivative matrix
-        self.D1 = R.T @ D @ R
+        D2_intermediate = (
+            -temp.T @ np.diag(w) @ temp
+        )  # D2 is the second derivative matrix
+        D1_intermediate = R.T @ np.diag(w) @ D @ R
         self.S = R.T @ np.diag(w) @ R  # S is the mass matrix
         self.weights = w @ R
-        S_lu = np.linalg.cholesky(
-            self.S
-        )  # Cholesky factorization of the mass matrix
-        # self.D2 = np.linalg.inv(self.S) @ D2
-        self.D2 = np.linalg.solve(S_lu, np.linalg.solve(S_lu.T, D2))
+
+        # Compute differentiation matrices in the original basis.
+        self.D1 = np.linalg.solve(self.S, D1_intermediate)
+        self.D2 = np.linalg.solve(self.S, D2_intermediate)
+
+        # S is diagonal. Compute square root of inverse of S directly.
+        S_inv_sqrt = np.diag(1.0 / np.sqrt(np.diag(self.S)))
+
+        # Store symmetric versions of the differentiation matrices.
+        self.D2_symmetric = S_inv_sqrt @ D2_intermediate @ S_inv_sqrt
+        self.D1_symmetric = S_inv_sqrt @ D1_intermediate @ S_inv_sqrt
+
         self.R = R
-        # self.x = x
         self.dvr = dvr
         self.edge_indices = block_start2.copy()
         self.edge_indices[-1] -= 1
