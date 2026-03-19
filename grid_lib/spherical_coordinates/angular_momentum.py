@@ -22,7 +22,6 @@ from numba import njit
 
 
 def number_of_lm_states(l_max, m_max):
-
     """
     Number of lm states for a given l_max and m_max.
 
@@ -46,7 +45,6 @@ def number_of_lm_states(l_max, m_max):
 
 @njit
 def LM_to_I(L, M, L_max, M_max):
-
     """
     Map the quantum numbers (L,M) to an index I=0,...,n_lm-1.
 
@@ -83,7 +81,6 @@ def LM_to_I(L, M, L_max, M_max):
 
 
 def setup_y_and_ybar_sympy(l_max, m_max, L_max, M_max):
-
     """
     Compute
 
@@ -135,4 +132,35 @@ def setup_y_and_ybar_sympy(l_max, m_max, L_max, M_max):
                                 gaunt(l1, L, l2, -m1, -M, m2).n(64)
                             ) * (-1) ** (m1 + M)
 
+    return y, y_bar
+
+
+def setup_y_and_ybar_compact(l_max, m_max, L_max, M_max):
+
+    n_L = L_max + 1
+    n_l = l_max + 1
+
+    n_lm = number_of_lm_states(l_max, m_max)
+
+    y = np.zeros((n_L, n_lm, n_lm))
+    y_bar = np.zeros((n_L, n_lm, n_lm))
+
+    for L in range(n_L):
+        for m1 in range(-m_max, m_max + 1):
+            for l1 in range(abs(m1), n_l):
+                I_l1m1 = LM_to_I(l1, m1, l_max, m_max)
+                for m2 in range(-m_max, m_max + 1):
+                    for l2 in range(abs(m2), n_l):
+                        I_l2m2 = LM_to_I(l2, m2, l_max, m_max)
+                        M12 = m1 - m2
+                        M21 = m2 - m1
+
+                        if abs(M12) <= L_max:
+                            y[L, I_l1m1, I_l2m2] = float(
+                                gaunt(l1, L, l2, -m1, M12, m2).n(64)
+                            ) * (-1) ** (m1)
+                        if abs(M21) <= L_max:
+                            y_bar[L, I_l1m1, I_l2m2] = float(
+                                gaunt(l1, L, l2, -m1, -M21, m2).n(64)
+                            ) * (-1) ** (m1 + M21)
     return y, y_bar
