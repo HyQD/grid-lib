@@ -30,9 +30,10 @@ class Linear_map:
 
 class GaussLegendreLobatto:
     def __init__(self, N, Mapping, symmetrize=True):
-        c = np.zeros((N + 1,))
-        c[-1] = 1
-        dc = legendre.legder(c)
+        self.N = N
+        self.c = np.zeros((N + 1,))
+        self.c[-1] = 1
+        self.dc = legendre.legder(self.c)
 
         """
         Find the Legendre-Lobatto grid points, defined as the roots of the derivative N-th order Legendre polynomial,
@@ -42,12 +43,12 @@ class GaussLegendreLobatto:
         self.x = np.zeros(N + 1)
         self.x[0] = -1
         self.x[-1] = 1
-        self.x[1:-1] = legendre.legroots(dc)
+        self.x[1:-1] = legendre.legroots(self.dc)
 
         self.D1 = np.zeros((N + 1, N + 1))
         self.D2 = np.zeros((N + 1, N + 1))
-        self.PN_x = legendre.legval(self.x[1:-1], c)
-        self.PN_x2 = legendre.legval(self.x, c)
+        self.PN_x = legendre.legval(self.x[1:-1], self.c)
+        self.PN_x2 = legendre.legval(self.x, self.c)
 
         self.weights = 2 / (N * (N + 1)) * np.ones(N + 1)
         if not symmetrize:
@@ -84,3 +85,27 @@ class GaussLegendreLobatto:
                         self.D1[i, j] *= self.PN_x2[i] / self.PN_x2[j]
 
         self.D2 = np.dot(self.D1, self.D1)
+
+    def cardinal_function(self, y, j):
+
+        if np.isscalar(y) and y == self.x[j]:
+            return self.weights[j]
+        elif isinstance(y, np.ndarray):
+            with np.errstate(divide="ignore", invalid="ignore"):
+                result = (
+                    -1
+                    / (self.N * (self.N + 1) * self.PN_x2[j])
+                    * (1 - y**2)
+                    * legendre.legval(y, self.dc)
+                    / (y - self.x[j])
+                )
+            result[y == self.x[j]] = 1.0
+            return result
+        else:
+            return (
+                -1
+                / (self.N * (self.N + 1) * self.PN_x2[j])
+                * (1 - y**2)
+                * legendre.legval(y, self.dc)
+                / (y - self.x[j])
+            )
