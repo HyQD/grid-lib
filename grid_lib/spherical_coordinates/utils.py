@@ -1,4 +1,24 @@
 import numpy as np
+from opt_einsum import contract
+
+
+def lowdin_orthogonalize(A, weights):
+
+    n_active = A.shape[0]
+    n_r = A.shape[1]
+    n_lm = A.shape[2]
+
+    A_ = contract("a, paJ->paJ", np.sqrt(weights), A)
+    A_ = A_.reshape((n_active, n_r * n_lm)).T
+    S = A_.T.conj() @ A_
+
+    Sigma, X = np.linalg.eigh(S)
+    Sm12 = X @ np.diag(Sigma ** (-0.5)) @ X.conj().T
+    A_new = (A_ @ Sm12).T
+
+    A_new = A_new.reshape((n_active, n_r, n_lm))
+    A_new = contract("paJ, a->paJ", A_new, 1 / np.sqrt(weights))
+    return A_new
 
 
 class Counter:
