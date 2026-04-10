@@ -2,7 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-class SincDvr:
+class SincDVR:
     def __init__(self, x0, xN, N):
         self.x0 = x0
         self.xN = xN
