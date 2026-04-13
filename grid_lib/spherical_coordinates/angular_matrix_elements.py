@@ -8,26 +8,26 @@ import scipy.special
 from packaging import version
 
 
-def sph_harm_y(m, n, phi, theta):
+def sph_harm_y(m, l, phi, theta):
     """
     Args:
-        m: azimuthal quantum number
-        n: Degree of the harmonic, commonly denoted as l in quantum mechanics
+        m: magnetic quantum number
+        l: orbital angular momentum quantum number
         theta: polar angle in [0,pi]
         phi: azimuthal angle in [0, 2pi)
     --------------------------------------------------------------------------------------------------------
     --------------------------------------------------------------------------------------------------------
     In Scipy < 1.15.0
-    sph_harm: sph_harm(m, n, theta, phi, out=None)
-        - m: azimuthal quantum number
-        - n: Degree of the harmonic, commonly denoted as l in quantum mechanics
+    sph_harm: sph_harm(m, l, theta, phi, out=None)
+        - m: magnetic quantum number
+        - l: orbital angular momentum quantum number
         - theta in [0, 2pi): azimuthal angle
         - phi in [0,pi]: polar angle
 
     In SciPy >= 1.15.0 sph_harm is deprecated (and will be removed in SciPy 1.17.0) called sph_harm_y where
-    sph_harm_y: sph_harm_y(n, m, theta, phi, *, diff_n=0)
-        - m: azimuthal quantum number
-        - n: Degree of the harmonic, commonly denoted as l in quantum mechanics
+    sph_harm_y: sph_harm_y(l, m, theta, phi, *, diff_l=0)
+        - m: magnetic quantum number
+        - l: orbital angular momentum quantum number
         - theta in [0,pi]: polar angle
         - phi in [0, 2pi): azimuthal angle
     --------------------------------------------------------------------------------------------------------
@@ -37,10 +37,10 @@ def sph_harm_y(m, n, phi, theta):
 
     if scipy_version >= version.parse("1.15.0"):
         # New: sph_harm_y(degree, order, polar, azimuthal)
-        return scipy.special.sph_harm_y(n, m, theta, phi)
+        return scipy.special.sph_harm_y(l, m, theta, phi)
     else:
         # Old: sph_harm(order, degree, azimuthal, polar)
-        return scipy.special.sph_harm(m, n, phi, theta)
+        return scipy.special.sph_harm(m, l, phi, theta)
 
 
 class AngularMatrixElements:
