@@ -1,6 +1,9 @@
 import numpy as np
 import time
 from matplotlib import pyplot as plt
+import scipy as sp
+
+print(f"Scipy version: {sp.__version__}")
 
 from grid_lib.pseudospectral_grids.gauss_legendre_lobatto import (
     GaussLegendreLobatto,
@@ -15,6 +18,8 @@ from grid_lib.spherical_coordinates.radial_matrix_elements import (
     RadialMatrixElements,
 )
 
+import grid_lib as gb
+print(f"Grid-lib version: {gb.__version__}")
 
 def kron_delta(x1, x2):
     if x1 == x2:
@@ -23,9 +28,9 @@ def kron_delta(x1, x2):
         return 0
 
 
-N = 100
-r_max = 20
-gll = GaussLegendreLobatto(N, Linear_map(r_max=r_max))
+N = 36
+r_max = 12
+gll = GaussLegendreLobatto(N, Linear_map(r_max=r_max), symmetrize=False)
 weights = gll.weights
 
 # setup radial matrix elements
@@ -33,12 +38,12 @@ radial_matrix_elements = RadialMatrixElements(gll)
 potential = -radial_matrix_elements.r_inv
 r = radial_matrix_elements.r
 n_r = len(r)
-D1 = radial_matrix_elements.D1
+
 T_D2 = -(1 / 2) * radial_matrix_elements.D2
 
 Z = 1
 B = 1
-l_max = 12
+l_max = 6
 m_list = [0, -1, -2]
 
 print()
@@ -82,11 +87,14 @@ for m in m_list:
                     col += 1
             row += 1
 
-    eps, C = np.linalg.eigh(H)
+    eps, C = np.linalg.eig(H)
+    idx = np.argsort(eps)
+    eps = eps[idx]
+    C = C[:, idx]
 
     # Print binding energy as defined in Ref.[1] and groundstate energy.
     # The resulting binding energies for m=0,-1,-2 and B=1.0 are in reasonable agreement with
     # the values reported in Ref.[1] (Table 1,2, and 3).
-    print(f"Lowest eigenvalue m={m}: {eps[0]}")
-    print(f"Binding energy    m={m}: {0.5 * B * (abs(m) + m + 1) - eps[0]}")
+    print(f"Lowest eigenvalue m={m}: {eps[0]:.3f}")
+    print(f"Binding energy    m={m}: {0.5 * B * (abs(m) + m + 1) - eps[0]:.3f}")
     print()
