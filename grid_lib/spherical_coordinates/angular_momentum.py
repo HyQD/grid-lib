@@ -1,22 +1,4 @@
 import numpy as np
-
-from scipy.special import sph_harm, lpmv as Pml, factorial
-
-"""
-In Scipy 1.10.1 
-sph_harm: sph_harm(m, n, theta, phi, out=None)
-    - m: azimuthal quantum number
-    - n: Degree of the harmonic, commonly denoted as l in quantum mechanics
-    - theta in [0, 2pi): azimuthal angle 
-    - phi in [0,pi]: polar angle
-
-In SciPy 1.15.2 sph_harm is deprecated (and will be removed in SciPy 1.17.0) called sph_harm_y where 
-sph_harm_y: sph_harm_y(n, m, theta, phi, *, diff_n=0)
-    - m: azimuthal quantum number
-    - n: Degree of the harmonic, commonly denoted as l in quantum mechanics
-    - theta in [0,pi]: polar angle
-    - phi in [0, 2pi): azimuthal angle
-"""
 from sympy.physics.wigner import gaunt
 from numba import njit
 
