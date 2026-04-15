@@ -3,44 +3,7 @@ import time
 from numpy.polynomial import legendre
 from scipy.special import spherical_jn
 from pathlib import Path
-
-import scipy.special
-from packaging import version
-
-
-def sph_harm_y(m, l, phi, theta):
-    """
-    Args:
-        m: magnetic quantum number
-        l: orbital angular momentum quantum number
-        theta: polar angle in [0,pi]
-        phi: azimuthal angle in [0, 2pi)
-    --------------------------------------------------------------------------------------------------------
-    --------------------------------------------------------------------------------------------------------
-    In Scipy < 1.15.0
-    sph_harm: sph_harm(m, l, theta, phi, out=None)
-        - m: magnetic quantum number
-        - l: orbital angular momentum quantum number
-        - theta in [0, 2pi): azimuthal angle
-        - phi in [0,pi]: polar angle
-
-    In SciPy >= 1.15.0 sph_harm is deprecated (and will be removed in SciPy 1.17.0) called sph_harm_y where
-    sph_harm_y: sph_harm_y(l, m, theta, phi, *, diff_l=0)
-        - m: magnetic quantum number
-        - l: orbital angular momentum quantum number
-        - theta in [0,pi]: polar angle
-        - phi in [0, 2pi): azimuthal angle
-    --------------------------------------------------------------------------------------------------------
-    --------------------------------------------------------------------------------------------------------
-    """
-    scipy_version = version.parse(scipy.__version__)
-
-    if scipy_version >= version.parse("1.15.0"):
-        # New: sph_harm_y(degree, order, polar, azimuthal)
-        return scipy.special.sph_harm_y(l, m, theta, phi)
-    else:
-        # Old: sph_harm(order, degree, azimuthal, polar)
-        return scipy.special.sph_harm(m, l, phi, theta)
+from .utils import sph_harm_y
 
 
 class AngularMatrixElements:

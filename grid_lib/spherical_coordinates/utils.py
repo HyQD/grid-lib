@@ -1,5 +1,7 @@
 import numpy as np
 from opt_einsum import contract
+import scipy.special
+from packaging import version
 
 
 def lowdin_orthogonalize(A, weights):
@@ -48,3 +50,41 @@ def mask_function(r, r_max, r0, n=4):
     )
 
     return mask_r
+
+
+def sph_harm_y(m, l, phi, theta):
+    """
+    Compute Y_{l,m}(theta, phi) with a stable angle convention across SciPy versions.
+
+    Args:
+        m: magnetic quantum number
+        l: orbital angular momentum quantum number
+        phi: azimuthal angle in [0, 2*pi)
+        theta: polar angle in [0, pi]
+    """
+    scipy_version = version.parse(scipy.__version__)
+
+    if scipy_version >= version.parse("1.15.0"):
+        return scipy.special.sph_harm_y(l, m, theta, phi)
+
+    return scipy.special.sph_harm(m, l, phi, theta)
+
+
+def Ylm(l, m, theta, phi):
+    """
+    Compute the complex spherical harmonic Y_{l,m}(theta, phi).
+
+    Args:
+        l: orbital angular momentum quantum number
+        m: magnetic quantum number
+        theta: polar angle in [0, pi]
+        phi: azimuthal angle in [0, 2*pi)
+    """
+    if l < 0:
+        raise ValueError("l must be >= 0")
+    if abs(m) > l:
+        raise ValueError("Require |m| <= l")
+
+    theta = np.asarray(theta)
+    phi = np.asarray(phi)
+    return sph_harm_y(m, l, phi, theta)
