@@ -88,3 +88,36 @@ def Ylm(l, m, theta, phi):
     theta = np.asarray(theta)
     phi = np.asarray(phi)
     return sph_harm_y(m, l, phi, theta)
+
+
+def cartesian_to_spherical(a):
+    """
+    Convert a 3D Cartesian point to spherical coordinates.
+
+    Parameters
+    ----------
+    a : array_like
+        Cartesian point ``(a1, a2, a3)``.
+
+    Returns
+    -------
+    r : float
+        Radius.
+    theta : float
+        Polar angle in ``[0, pi]``.
+    phi : float
+        Azimuthal angle in ``[0, 2*pi)``. At the poles, ``phi = 0`` is
+        returned by convention.
+    """
+    a = np.asarray(a, dtype=float)
+    if a.shape != (3,):
+        raise ValueError('Expected a 3D vector with shape (3,)')
+
+    r = np.linalg.norm(a)
+    if r == 0:
+        raise ValueError('Spherical angles are undefined for the zero vector')
+
+    theta = np.arccos(a[2] / r)
+    phi = np.mod(np.arctan2(a[1], a[0]), 2 * np.pi)
+
+    return r, theta, phi
