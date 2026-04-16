@@ -1,5 +1,7 @@
 import numpy as np
 from opt_einsum import contract
+import scipy.special
+from packaging import version
 
 
 def lowdin_orthogonalize(A, weights):
@@ -48,3 +50,74 @@ def mask_function(r, r_max, r0, n=4):
     )
 
     return mask_r
+
+
+def sph_harm_y(m, l, phi, theta):
+    """
+    Compute Y_{l,m}(theta, phi) with a stable angle convention across SciPy versions.
+
+    Args:
+        m: magnetic quantum number
+        l: orbital angular momentum quantum number
+        phi: azimuthal angle in [0, 2*pi)
+        theta: polar angle in [0, pi]
+    """
+    scipy_version = version.parse(scipy.__version__)
+
+    if scipy_version >= version.parse("1.15.0"):
+        return scipy.special.sph_harm_y(l, m, theta, phi)
+
+    return scipy.special.sph_harm(m, l, phi, theta)
+
+
+def Ylm(l, m, theta, phi):
+    """
+    Compute the complex spherical harmonic Y_{l,m}(theta, phi).
+
+    Args:
+        l: orbital angular momentum quantum number
+        m: magnetic quantum number
+        theta: polar angle in [0, pi]
+        phi: azimuthal angle in [0, 2*pi)
+    """
+    if l < 0:
+        raise ValueError("l must be >= 0")
+    if abs(m) > l:
+        raise ValueError("Require |m| <= l")
+
+    theta = np.asarray(theta)
+    phi = np.asarray(phi)
+    return sph_harm_y(m, l, phi, theta)
+
+
+def cartesian_to_spherical(a):
+    """
+    Convert a 3D Cartesian point to spherical coordinates.
+
+    Parameters
+    ----------
+    a : array_like
+        Cartesian point ``(a1, a2, a3)``.
+
+    Returns
+    -------
+    r : float
+        Radius.
+    theta : float
+        Polar angle in ``[0, pi]``.
+    phi : float
+        Azimuthal angle in ``[0, 2*pi)``. At the poles, ``phi = 0`` is
+        returned by convention.
+    """
+    a = np.asarray(a, dtype=float)
+    if a.shape != (3,):
+        raise ValueError('Expected a 3D vector with shape (3,)')
+
+    r = np.linalg.norm(a)
+    if r == 0:
+        raise ValueError('Spherical angles are undefined for the zero vector')
+
+    theta = np.arccos(a[2] / r)
+    phi = np.mod(np.arctan2(a[1], a[0]), 2 * np.pi)
+
+    return r, theta, phi
