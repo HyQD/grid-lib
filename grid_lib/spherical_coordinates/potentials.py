@@ -265,7 +265,14 @@ def clamped_molecular_potential_Poisson(
     V_LM = np.zeros((n_LM, len(r)), dtype=complex)
 
     for position, charge in zip(positions, charges):
-        R, theta_R, phi_R = cartesian_to_spherical(position)
+        R = np.linalg.norm(position)
+
+        if R == 0:
+            I_00 = LM_to_I(0, 0, L_max, M_max)
+            V_LM[I_00] += -charge * np.sqrt(4 * np.pi) / r
+            continue
+
+        _, theta_R, phi_R = cartesian_to_spherical(position)
         r_idx = np.argmin(np.abs(r - R))
 
         if not np.isclose(r[r_idx], R):
