@@ -117,7 +117,7 @@ def test_clamped_molecular_potential_poisson_warns_and_uses_nearest_grid_point()
     snapped_position = np.array([0.0, 0.0, r[nearest_idx]])
 
     with pytest.warns(
-        UserWarning, match="not a grid point; using nearest grid point"
+        UserWarning, match="not a grid point; nearest grid point"
     ):
         V_poisson = clamped_molecular_potential_Poisson(
             r,
@@ -127,6 +127,7 @@ def test_clamped_molecular_potential_poisson_warns_and_uses_nearest_grid_point()
             charges=[1.0],
             L_max=L_max,
             M_max=M_max,
+            force=True,
         )
 
     V_expected = clamped_molecular_potential_Poisson(
