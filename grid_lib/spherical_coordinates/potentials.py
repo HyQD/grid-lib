@@ -195,7 +195,7 @@ def clamped_molecular_potential_quadrature(
 
 
 def clamped_molecular_potential_Poisson(
-    r, W, weights, positions, charges, L_max, M_max=None
+    r, W, weights, positions, charges, L_max, M_max=None, force=False
 ):
     r"""
     Compute the spherical-harmonic radial coefficients of a clamped
@@ -223,6 +223,10 @@ def clamped_molecular_potential_Poisson(
         Maximum multipole rank in the expansion.
     M_max : int, optional
         Maximum magnetic quantum number stored. Defaults to ``L_max``.
+    force : bool, optional
+        If ``True``, issue a warning and use the nearest grid point when a
+        nuclear radius does not coincide with a grid point. If ``False``
+        (default), raise a ``ValueError`` instead.
 
     Returns
     -------
@@ -276,14 +280,15 @@ def clamped_molecular_potential_Poisson(
         r_idx = np.argmin(np.abs(r - R))
 
         if not np.isclose(r[r_idx], R):
-            warnings.warn(
-                (
-                    "Nuclear radius %.16g is not a grid point; "
-                    "using nearest grid point %.16g."
+            msg = (
+                "Nuclear radius %.16g is not a grid point; "
+                "nearest grid point is %.16g."
+            ) % (R, r[r_idx])
+            if not force:
+                raise ValueError(
+                    msg + " Pass force=True to use the nearest grid point."
                 )
-                % (R, r[r_idx]),
-                stacklevel=2,
-            )
+            warnings.warn(msg + " Using nearest grid point.", stacklevel=2)
 
         for M in range(-M_max, M_max + 1):
             for L in range(abs(M), L_max + 1):
