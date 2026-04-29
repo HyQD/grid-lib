@@ -9,7 +9,7 @@ description = "Grid-based tools for quantum dynamics and structure calculations.
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [
-  { name = "Hakon Emil Kristiansen" },
+  { name = "Håkon Emil Kristiansen" },
   { name = "Einar Aurbakken" },
 ]
 dependencies = [
