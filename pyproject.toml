@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "HyQD-grid-lib"
+dynamic = ["version"]
+description = "Grid-based tools for quantum dynamics and structure calculations."
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Hakon Emil Kristiansen" },
+  { name = "Einar Aurbakken" },
+]
+dependencies = [
+  "scipy",
+  "opt_einsum",
+]
+
+[project.urls]
+Homepage = "https://github.com/HyQD/grid-lib"
+Documentation = "https://hyqd.github.io/grid-lib/"
+
+[tool.setuptools.dynamic]
+version = { attr = "grid_lib.version.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["grid_lib*"]
+
+[tool.setuptools.package-data]
+"grid_lib.spherical_coordinates.Lebedev" = ["*"]
