@@ -17,6 +17,26 @@ dependencies = [
   "opt_einsum",
 ]
 
+[project.optional-dependencies]
+test = [
+  "pytest",
+  "numpy",
+  "matplotlib",
+]
+docs = [
+  "sphinx",
+  "sphinx-rtd-theme",
+  "sphinx-tabs",
+  "numpydoc",
+  "sphinxcontrib-bibtex",
+  "matplotlib",
+  "numpy",
+  "jinja2<3.1",
+]
+dev = [
+  "HyQD-grid-lib[test,docs]",
+]
+
 [project.urls]
 Homepage = "https://github.com/HyQD/grid-lib"
 Documentation = "https://hyqd.github.io/grid-lib/"
