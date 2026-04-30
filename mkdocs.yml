@@ -1,0 +1,74 @@
+site_name: HyQD Grid Library
+site_description: Grid-based tools for quantum dynamics and structure calculations.
+site_url: https://hyqd.github.io/grid-lib/
+repo_url: https://github.com/HyQD/grid-lib
+repo_name: HyQD/grid-lib
+
+docs_dir: docs_site
+site_dir: site
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Theory:
+      - Overview: theory/index.md
+      - Spherical Coordinates: theory/spherical_coordinates.md
+      - Spherical Harmonics: theory/sph.md
+      - TISE: theory/tise.md
+      - TDSE: theory/tdse.md
+  - Examples: examples.md
+  - Notebooks:
+      - Stationary States (Cylindrical): notebooks/stationary_states_cylindrical_coordinates.ipynb
+      - STO Matrix Elements: notebooks/sto_matrix_elements.ipynb
+  - API:
+      - API Overview: api/index.md
+      - Spherical Coordinates: api/spherical_coordinates.md
+      - Cartesian Coordinates: api/cartesian_coordinates.md
+      - Pseudospectral Grids: api/pseudospectral_grids.md
+
+theme:
+  name: material
+  font:
+    text: Merriweather
+    code: Fira Code
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+  palette:
+    - scheme: default
+      primary: teal
+      accent: amber
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: numpy
+            show_source: false
+            show_root_heading: true
+            show_if_no_docstring: false
+  - mkdocs-jupyter:
+      execute: false
+      include_source: true
+      ignore_h1_titles: true
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+extra_css:
+  - assets/custom.css
