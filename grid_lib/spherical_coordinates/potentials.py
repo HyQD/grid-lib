@@ -1,7 +1,7 @@
 import warnings
 
 import numpy as np
-from scipy.special import erf
+from scipy.special import erf, spherical_in
 
 from .angular_momentum import LM_to_I, number_of_lm_states
 from .utils import Ylm, cartesian_to_spherical
@@ -301,3 +301,94 @@ def clamped_molecular_potential_Poisson(
         return V_LM.real
 
     return V_LM
+
+
+def gaussian_spherical_wave_expansion(r, r0, A, alpha, L_max, M_max=None):
+    r"""
+    Compute the spherical-harmonic radial coefficients of a Gaussian
+    centered at :math:`\mathbf{r}_0`.
+
+    The Gaussian is defined as
+
+    .. math::
+        g(\mathbf{r}) = A \, e^{-\alpha |\mathbf{r} - \mathbf{r}_0|^2}
+
+    and is expanded as
+
+    .. math::
+        g(\mathbf{r}) = \sum_{L,M} g_{LM}(r) \, Y_{LM}(\Omega),
+
+    where the radial components are given analytically by
+
+    .. math::
+        g_{LM}(r) = 4\pi A \, e^{-\alpha(r^2 + R_0^2)} \,
+                    i_L(2\alpha r R_0) \, Y_{LM}^*(\Omega_0),
+
+    with :math:`R_0 = |\mathbf{r}_0|`, :math:`\Omega_0` the solid angle of
+    :math:`\mathbf{r}_0`, and :math:`i_L` the modified spherical Bessel
+    function of the first kind. For :math:`R_0 = 0` only the
+    :math:`(L, M) = (0, 0)` term survives:
+    :math:`g_{00}(r) = A \sqrt{4\pi} \, e^{-\alpha r^2}`.
+
+    Parameters
+    ----------
+    r : array_like
+        Radial grid values where the coefficients are evaluated.
+    r0 : array_like
+        Cartesian centre of the Gaussian with shape ``(3,)``.
+    A : float
+        Amplitude of the Gaussian.
+    alpha : float
+        Exponent of the Gaussian (must be positive).
+    L_max : int
+        Maximum angular-momentum rank in the expansion.
+    M_max : int, optional
+        Maximum magnetic quantum number stored. Defaults to ``L_max``.
+
+    Returns
+    -------
+    np.ndarray
+        Array of shape ``(n_LM, len(r))`` storing :math:`g_{LM}(r)` in the
+        repo's ``LM_to_I`` ordering. Returns a real array if the imaginary
+        part is negligible, otherwise complex.
+    """
+    r = np.asarray(r, dtype=float)
+    r0 = np.asarray(r0, dtype=float)
+
+    if L_max < 0:
+        raise ValueError("L_max must be >= 0")
+
+    if M_max is None:
+        M_max = L_max
+    if M_max < 0 or M_max > L_max:
+        raise ValueError("Require 0 <= M_max <= L_max")
+
+    if r.ndim != 1:
+        raise ValueError("r must be a one-dimensional array")
+    if r0.shape != (3,):
+        raise ValueError("r0 must be a Cartesian vector of shape (3,)")
+
+    n_LM = number_of_lm_states(L_max, M_max)
+    g_LM = np.zeros((n_LM, len(r)), dtype=complex)
+
+    R0 = np.linalg.norm(r0)
+
+    if R0 == 0:
+        I_00 = LM_to_I(0, 0, L_max, M_max)
+        g_LM[I_00] = A * np.sqrt(4 * np.pi) * np.exp(-alpha * r**2)
+    else:
+        _, theta_0, phi_0 = cartesian_to_spherical(r0)
+        z = 2 * alpha * r * R0
+        envelope = A * 4 * np.pi * np.exp(-alpha * (r**2 + R0**2))
+
+        for M in range(-M_max, M_max + 1):
+            for L in range(abs(M), L_max + 1):
+                I_LM = LM_to_I(L, M, L_max, M_max)
+                angular = np.conj(Ylm(L, M, theta_0, phi_0))
+                radial = spherical_in(L, z)
+                g_LM[I_LM] = envelope * radial * angular
+
+    if np.allclose(g_LM.imag, 0.0):
+        return g_LM.real
+
+    return g_LM
