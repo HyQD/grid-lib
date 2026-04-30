@@ -1,0 +1,14 @@
+:root {
+  --md-primary-fg-color: #00695c;
+  --md-accent-fg-color: #ff8f00;
+}
+
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3 {
+  letter-spacing: 0.01em;
+}
+
+.md-grid {
+  max-width: 1280px;
+}
