@@ -1,7 +1,7 @@
 import warnings
 
 import numpy as np
-from scipy.special import erf, spherical_in
+from scipy.special import erf, spherical_in, spherical_jn
 
 from .angular_momentum import LM_to_I, number_of_lm_states
 from .utils import Ylm, cartesian_to_spherical
@@ -392,3 +392,175 @@ def gaussian_spherical_wave_expansion(r, r0, A, alpha, L_max, M_max=None):
         return g_LM.real
 
     return g_LM
+
+
+def plane_wave_spherical_wave_expansion(r, k, L_max, M_max=None, sign=1):
+    r"""
+    Compute the spherical-harmonic radial coefficients of a plane wave.
+
+    The plane wave is expanded as
+
+    .. math::
+        e^{i\sigma\mathbf{k}\cdot\mathbf{r}} =
+        \sum_{L,M} f_{LM}(r)\, Y_{LM}(\hat{r}),
+
+    where :math:`\sigma = \pm 1` is controlled by ``sign`` and
+
+    .. math::
+        f_{LM}(r) = 4\pi\,(i\sigma)^L\, j_L(kr)\, Y_{LM}^*(\hat{k}),
+
+    with :math:`k = |\mathbf{k}|`, :math:`\hat{k}` the unit vector of
+    :math:`\mathbf{k}`, and :math:`j_L` the spherical Bessel function of
+    the first kind.
+
+    Parameters
+    ----------
+    r : array_like
+        Radial grid values where the coefficients are evaluated.
+    k : array_like
+        Cartesian wave vector with shape ``(3,)``.
+    L_max : int
+        Maximum angular-momentum rank in the expansion.
+    M_max : int, optional
+        Maximum magnetic quantum number stored. Defaults to ``L_max``.
+    sign : {+1, -1}, optional
+        Sign :math:`\sigma` in the exponent. Use ``+1`` (default) for
+        :math:`e^{i\mathbf{k}\cdot\mathbf{r}}` and ``-1`` for
+        :math:`e^{-i\mathbf{k}\cdot\mathbf{r}}`.
+
+    Returns
+    -------
+    np.ndarray
+        Array of shape ``(n_LM, len(r))`` storing :math:`f_{LM}(r)` in the
+        repo's ``LM_to_I`` ordering. Returns a real array if the imaginary
+        part is negligible, otherwise complex.
+    """
+    r = np.asarray(r, dtype=float)
+    k = np.asarray(k, dtype=float)
+
+    if sign not in (1, -1):
+        raise ValueError("sign must be +1 or -1")
+    if L_max < 0:
+        raise ValueError("L_max must be >= 0")
+
+    if M_max is None:
+        M_max = L_max
+    if M_max < 0 or M_max > L_max:
+        raise ValueError("Require 0 <= M_max <= L_max")
+
+    if r.ndim != 1:
+        raise ValueError("r must be a one-dimensional array")
+    if k.shape != (3,):
+        raise ValueError("k must be a Cartesian vector of shape (3,)")
+
+    K = np.linalg.norm(k)
+
+    n_LM = number_of_lm_states(L_max, M_max)
+    f_LM = np.zeros((n_LM, len(r)), dtype=complex)
+
+    if K == 0:
+        I_00 = LM_to_I(0, 0, L_max, M_max)
+        f_LM[I_00] = np.sqrt(4 * np.pi) * np.ones(len(r))
+    else:
+        _, theta_k, phi_k = cartesian_to_spherical(k)
+        kr = K * r
+
+        for M in range(-M_max, M_max + 1):
+            for L in range(abs(M), L_max + 1):
+                I_LM = LM_to_I(L, M, L_max, M_max)
+                angular = np.conj(Ylm(L, M, theta_k, phi_k))
+                radial = spherical_jn(L, kr)
+                f_LM[I_LM] = 4 * np.pi * (1j * sign) ** L * radial * angular
+
+    if np.allclose(f_LM.imag, 0.0):
+        return f_LM.real
+
+    return f_LM
+
+
+def quadratic_potential_spherical_wave_expansion(
+    r, r0, omega, L_max, M_max=None
+):
+    r"""
+    Compute the spherical-harmonic radial coefficients of a quadratic
+    potential centered at :math:`\mathbf{r}_0`.
+
+    The potential is defined as
+
+    .. math::
+        V(\mathbf{r};\mathbf{r}_0) = \tfrac{1}{2}\omega^2
+        |\mathbf{r} - \mathbf{r}_0|^2
+
+    and is expanded as
+
+    .. math::
+        V(\mathbf{r};\mathbf{r}_0) = \sum_{L,M} V_{LM}(r)\, Y_{LM}(\hat{r}).
+
+    The expansion is exact and contains only :math:`L = 0` and :math:`L = 1`
+    terms:
+
+    .. math::
+        V_{00}(r) &= \tfrac{1}{2}\omega^2\,(r^2 + R_0^2)\,\sqrt{4\pi}, \\
+        V_{1M}(r) &= -\omega^2\, r R_0\,\frac{4\pi}{3}\,Y_{1M}^*(\hat{r}_0),
+
+    where :math:`R_0 = |\mathbf{r}_0|`.  For :math:`R_0 = 0` only
+    :math:`V_{00}` survives.
+
+    Parameters
+    ----------
+    r : array_like
+        Radial grid values where the coefficients are evaluated.
+    r0 : array_like
+        Cartesian centre of the potential with shape ``(3,)``.
+    omega : float
+        Frequency (force constant is :math:`\omega^2`).
+    L_max : int
+        Maximum angular-momentum rank stored. Must be ``>= 1`` when
+        :math:`R_0 \neq 0` to capture the :math:`L=1` terms.
+    M_max : int, optional
+        Maximum magnetic quantum number stored. Defaults to ``L_max``.
+
+    Returns
+    -------
+    np.ndarray
+        Array of shape ``(n_LM, len(r))`` storing :math:`V_{LM}(r)` in the
+        repo's ``LM_to_I`` ordering. Returns a real array if the imaginary
+        part is negligible, otherwise complex.
+    """
+    r = np.asarray(r, dtype=float)
+    r0 = np.asarray(r0, dtype=float)
+
+    if L_max < 0:
+        raise ValueError("L_max must be >= 0")
+
+    if M_max is None:
+        M_max = L_max
+    if M_max < 0 or M_max > L_max:
+        raise ValueError("Require 0 <= M_max <= L_max")
+
+    if r.ndim != 1:
+        raise ValueError("r must be a one-dimensional array")
+    if r0.shape != (3,):
+        raise ValueError("r0 must be a Cartesian vector of shape (3,)")
+
+    n_LM = number_of_lm_states(L_max, M_max)
+    V_LM = np.zeros((n_LM, len(r)), dtype=complex)
+
+    R0 = np.linalg.norm(r0)
+
+    # L = 0 term: always present
+    I_00 = LM_to_I(0, 0, L_max, M_max)
+    V_LM[I_00] = 0.5 * omega**2 * (r**2 + R0**2) * np.sqrt(4 * np.pi)
+
+    # L = 1 terms: only when centre is off-origin and L_max >= 1
+    if R0 != 0 and L_max >= 1:
+        _, theta_0, phi_0 = cartesian_to_spherical(r0)
+        for M in range(max(-1, -M_max), min(1, M_max) + 1):
+            I_1M = LM_to_I(1, M, L_max, M_max)
+            angular = np.conj(Ylm(1, M, theta_0, phi_0))
+            V_LM[I_1M] = -omega**2 * r * R0 * (4 * np.pi / 3) * angular
+
+    if np.allclose(V_LM.imag, 0.0):
+        return V_LM.real
+
+    return V_LM
