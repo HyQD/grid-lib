@@ -37,8 +37,7 @@ def get_hydrogenic_orbitals(GLL, l_max, n_s, Z):
     """
 
     r = GLL.r[1:-1]
-    w_r = GLL.weights[1:-1]
-    r_dot = GLL.r_dot[1:-1]
+    weights = GLL.weights[1:-1]
     D1 = GLL.D1
     D2 = np.dot(D1, D1)[1:-1, 1:-1]
 
@@ -59,7 +58,7 @@ def get_hydrogenic_orbitals(GLL, l_max, n_s, Z):
         n_states = n_s[l]
         B = U[:, 0:n_states]
         for i in range(n_states):
-            norm_psi = np.dot(w_r, r_dot * B[:, i] * B[:, i])
+            norm_psi = np.dot(weights, B[:, i] * B[:, i])
             B[:, i] /= np.sqrt(norm_psi)
         orbitals[f"{l}"] = B.copy()
         orbital_energy[f"{l}"] = eps[0:n_states].copy()
