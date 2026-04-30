@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 
 from grid_lib.pseudospectral_grids.gauss_legendre_lobatto import (
     GaussLegendreLobatto,
-    Rational_map,
+    Linear_map,
 )
 from grid_lib.spherical_coordinates.angular_momentum import LM_to_I
 from grid_lib.spherical_coordinates.potentials import (
@@ -31,7 +31,7 @@ M_max = 0  # z-axis centre: only M = 0 terms are non-zero
 # Radial grid
 N = 150
 r_max = 10.0
-gll = GaussLegendreLobatto(N, Rational_map(r_max=r_max, alpha=0.4))
+gll = GaussLegendreLobatto(N, Linear_map(r_min=0.0, r_max=r_max))
 r = gll.r[1:-1]
 
 # Compute radial components
@@ -50,7 +50,10 @@ fig, (ax, ax2) = plt.subplots(1, 2, figsize=(13, 4), sharey=False)
 # Top panel: single Gaussian
 for L in range(L_max + 1):
     I = LM_to_I(L, 0, L_max, M_max)
-    ax.plot(r, g_LM[I], label=rf"$g_{{L={L},M=0}}(r)$")
+    component = g_LM[I]
+    if np.allclose(component, 0.0):
+        continue
+    ax.plot(r, component, label=rf"$g_{{L={L},M=0}}(r)$")
 
 ax.plot(r, g00(r, r0, A, alpha), "k--", label=r"$g_{00}(r)$ (exact)")
 ax.set_xlabel(r"$r$ (a.u.)")
@@ -65,7 +68,10 @@ ax.set_xlim(0, r_max)
 # Right panel: symmetric superposition
 for L in range(L_max + 1):
     I = LM_to_I(L, 0, L_max, M_max)
-    ax2.plot(r, g_LM_super[I], label=rf"$g_{{L={L},M=0}}(r)$")
+    component = g_LM_super[I]
+    if np.allclose(component, 0.0):
+        continue
+    ax2.plot(r, component, label=rf"$g_{{L={L},M=0}}(r)$")
 
 ax2.set_xlabel(r"$r$ (a.u.)")
 ax2.set_ylabel(r"$g_{LM}(r)$")
