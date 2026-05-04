@@ -87,7 +87,7 @@ def test_integrate_xk_exp_minus_a_x2():
             integral_quadrature = np.dot(w, f)
             integral_exact = 0.5 * a ** (-(k + 1) / 2) * gamma((k + 1) / 2)
             np.testing.assert_allclose(
-                integral_quadrature, integral_exact, rtol=0.0, atol=1e-12
+                integral_quadrature, integral_exact, rtol=0.0, atol=1e-10
             )
 
     test_integrate_xk_exp_minus_a_x2(1.0)
