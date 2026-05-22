@@ -1,34 +1,35 @@
 import numpy as np
 
 
-def Coulomb(x, Z, x_c=0.0, alpha=1.0):
+def soft_core_Coulomb(x, Z1=-1.0, Z2=-1.0, x_c=0.0, a=1.0):
     """
     Coulomb potential in 1D.
 
     Args:
         x (np.ndarray): The grid points.
-        Z (float): The nuclear charge.
+        Z1 (float): Charge of the first particle.
+        Z2 (float): Charge of the second particle.
         x_c (float): The nuclear position.
         a (float): The regularization parameter.
     """
-    return -Z / np.sqrt((x - x_c) ** 2 + alpha)
+    return Z1 * Z2 / np.sqrt((x - x_c) ** 2 + a**2)
 
 
 class Molecule1D:
-    def __init__(self, R=[0.0], Z=[1], alpha=1.0):
+    def __init__(self, R=[0.0], Z=[1], a=1.0):
         """
         Molecular potential in 1D.
 
         Args:
             R (list): The nuclear positions.
             Z (list): The nuclear charges.
-            alpha (float): The regularization parameter.
+            a (float): The regularization parameter.
         """
         self.R_list = R
         self.Z_list = Z
-        if alpha <= 0:
+        if a <= 0:
             raise ValueError("The regularization parameter must be positive.")
-        self.alpha = alpha
+        self.a = a
 
     def __call__(self, x):
         if isinstance(x, float):
@@ -36,7 +37,7 @@ class Molecule1D:
         else:
             potential = np.zeros(len(x))
         for R, Z in zip(self.R_list, self.Z_list):
-            potential += Coulomb(x, Z=Z, x_c=R, alpha=self.alpha)
+            potential += soft_core_Coulomb(x, Z1=-1.0, Z2=Z, x_c=R, a=self.a)
         return potential
 
 
