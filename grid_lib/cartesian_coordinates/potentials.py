@@ -14,6 +14,19 @@ def Coulomb(x, Z, x_c=0.0, alpha=1.0):
     return -Z / np.sqrt((x - x_c) ** 2 + alpha)
 
 
+class SoftCoreCoulomb:
+
+    def __init__(self, Z1=-1.0, Z2=-1.0, x_c=0.0, a=1.0):
+        self.Z1 = Z1
+        self.Z2 = Z2
+        self.x_c = x_c
+        if a <= 0:
+            raise ValueError("The regularization parameter must be positive.")
+        self.a = a
+
+    def __call__(self, x):
+        return self.Z1 * self.Z2 / np.sqrt((x - self.x_c) ** 2 + self.a**2)
+
 class Molecule1D:
     def __init__(self, R=[0.0], Z=[1], alpha=1.0):
         """
@@ -40,5 +53,26 @@ class Molecule1D:
         return potential
 
 
-def harmonic_oscillator(x, omega):
-    return 0.5 * omega**2 * x**2
+class HarmonicOscillator:
+    def __init__(self, omega=1.0, x_c=0.0):
+        self.omega = omega
+        self.x_c = x_c
+
+    def __call__(self, x):
+        return 0.5 * self.omega**2 * (x - self.x_c)**2
+
+def harmonic_oscillator(x, omega, x_c=0.0):
+    return 0.5 * omega**2 * (x - x_c)**2
+
+def soft_core_Coulomb(x, Z1=-1.0, Z2=-1.0, x_c=0.0, a=1.0):
+    """
+    Coulomb potential in 1D.
+
+    Args:
+        x (np.ndarray): The grid points.
+        Z1 (float): Charge of the first particle.
+        Z2 (float): Charge of the second particle.
+        x_c (float): The nuclear position.
+        a (float): The regularization parameter.
+    """
+    return Z1 * Z2 / np.sqrt((x - x_c) ** 2 + a**2)
