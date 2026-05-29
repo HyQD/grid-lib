@@ -43,7 +43,10 @@ class Molecule1D:
         if a <= 0:
             raise ValueError("The regularization parameter must be positive.")
         self.a = a
-
+        self.e_nuclear = 0 
+        for A in range(len(R)):
+            for B in range(A+1, len(R)):
+                self.e_nuclear += Z[A] * Z[B] / np.sqrt((R[A] - R[B])**2)
     def __call__(self, x):
         if isinstance(x, float):
             potential = 0
