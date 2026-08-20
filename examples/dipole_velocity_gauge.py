@@ -60,7 +60,7 @@ alpha = 0.4
 ### SETUP ########################
 
 # setup Legendre-Lobatto grid
-gll = GaussLegendreLobatto(N, Linear_map(r_max=r_max))
+gll = GaussLegendreLobatto(N, Linear_map(r_max=r_max), symmetrize=False)
 weights = gll.weights
 
 # setup radial matrix elements
@@ -81,7 +81,7 @@ mask_r = mask_function(r, r[-1], r[-1] - 30)
 
 # Compute ground/intial state
 eps, phi_n = compute_ground_state(
-    angular_matrix_elements, radial_matrix_elements, potential
+    angular_matrix_elements, radial_matrix_elements, potential, hermitian=False
 )
 
 # setup initial state
