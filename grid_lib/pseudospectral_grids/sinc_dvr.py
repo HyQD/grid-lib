@@ -1,5 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
+from .pseudospectral_grid import PseudospectralGrid
 
 
 class SincDVR:
@@ -8,7 +9,7 @@ class SincDVR:
         self.xN = xN
         self.N = N
         self.dx = (xN - x0) / (N - 1)
-        self.x = np.linspace(x0, xN, N)
+        self.r = np.linspace(x0, xN, N)
         self.weights = self.dx * np.ones(N)
 
         self.D1 = np.zeros((self.N, self.N))
@@ -29,31 +30,88 @@ class SincDVR:
                         -2 * (-1) ** (i - j) / (self.dx**2 * (i - j) ** 2)
                     )
 
+class RadialSincDVR(PseudospectralGrid):
+    """Radial sinc DVR for reduced wavefunctions on ``0 < r <= r_max``."""
 
-# if __name__ == "__main__":
-#     x0 = -10
-#     xN = 10
-#     N = 201
-#     sinc_dvr = SincDvr(x0, xN, N)
+    def __repr__(self):
+        return f"RadialSincDVR"
 
-#     T = -0.5 * sinc_dvr.D2
-#     V_HO = np.diag(0.5 * sinc_dvr.x**2)
-#     V_1D_Hydrogen = np.diag(-1 / np.sqrt(sinc_dvr.x**2 + 2.0))
-#     H_HO = T + V_HO
-#     H_1D_Hydrogen = T + V_1D_Hydrogen
+    def __init__(self, r_max, N):
+        """
+        Sinc DVR on r > 0 with u(0) = 0 imposed through
+        an odd extension across the origin.
 
-#     eps_ho, C_ho = np.linalg.eigh(H_HO)
-#     print("Eigenvalues:", eps_ho[0:5])
-#     eps_hydrogen, C_hydrogen = np.linalg.eigh(H_1D_Hydrogen)
-#     print("Eigenvalues:", eps_hydrogen[0:5])
+        Grid:
+            r_j = j*dr,  j = 1,...,N
 
-#     test_function = np.exp(-sinc_dvr.x**2)
-#     df_dx = sinc_dvr.D1 @ test_function
-#     plt.figure()
-#     plt.subplot(211)
-#     plt.plot(sinc_dvr.x, df_dx, label="Numerical derivative")
-#     plt.legend()
-#     plt.subplot(212)
-#     plt.plot(sinc_dvr.x, df_dx - (-2 * sinc_dvr.x * np.exp(-sinc_dvr.x**2)), label="Error")
-#     plt.legend()
-#     plt.show()
+        The point r=0 is a boundary, not a DVR point.
+        """
+
+        self.N = N
+        self.r_max = r_max
+        self.dr = r_max / N
+
+        # Integer sinc indices 1,...,N
+        j = np.arange(1, N + 1)
+        self.j = j
+
+        # Physical grid
+        self.r = self.dr * j
+        self.weights = self.dr * np.ones(N)
+
+        I, J = np.meshgrid(j, j, indexing="ij")
+
+        # ----------------------------------------------------------
+        # First derivative
+        #
+        # D1_rad(i,j) = D1(i,j) - D1(i,-j)
+        # ----------------------------------------------------------
+
+        # image contribution: -D1(i,-j)
+        self.D1 = (
+            -(-1.0)**(I + J)
+            / (self.dr * (I + J))
+        )
+
+        # ordinary D1(i,j), i != j
+        mask = I != J
+
+        self.D1[mask] += (
+            (-1.0)**(I[mask] - J[mask])
+            / (self.dr * (I[mask] - J[mask]))
+        )
+
+        # Diagonal is automatically
+        #
+        # D1_rad(i,i) = -1/(2*i*dr)
+
+
+        # ----------------------------------------------------------
+        # Second derivative
+        #
+        # D2_rad(i,j) = D2(i,j) - D2(i,-j)
+        # ----------------------------------------------------------
+
+        # image contribution: -D2(i,-j)
+        self.D2 = (
+            2.0 * (-1.0)**(I + J)
+            / (self.dr**2 * (I + J)**2)
+        )
+
+        # ordinary off-diagonal D2(i,j)
+        self.D2[mask] += (
+            -2.0 * (-1.0)**(I[mask] - J[mask])
+            / (
+                self.dr**2
+                * (I[mask] - J[mask])**2
+            )
+        )
+
+        # exact diagonal
+        np.fill_diagonal(
+            self.D2,
+            -np.pi**2 / (3.0 * self.dr**2)
+            + 1.0 / (
+                2.0 * self.dr**2 * j**2
+            )
+        )
