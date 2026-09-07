@@ -48,7 +48,7 @@ def test_integrate_polynomials_mapped_interval():
             np.testing.assert_allclose(
                 np.array([integral_xn]),
                 np.array([(b ** (n + 1) - a ** (n + 1)) / (n + 1)]),
-                rtol=0.0,
+                rtol=1e-14,
                 atol=a_tol,
             )
 

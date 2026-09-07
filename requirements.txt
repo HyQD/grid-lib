@@ -1,7 +1,9 @@
 h5py
 mpi4py
 networkx
-numpy<1.25
+numpy>=2.5.2,<2.6
+scipy>=1.18.0,<1.19
+numba>=0.67.0,<0.68
 sympy
 tomli
 cython<3

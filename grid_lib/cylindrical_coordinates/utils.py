@@ -1,6 +1,6 @@
 import numpy as np
 from numba import jit
-from scipy.integrate import simps
+from scipy.integrate import simpson
 import scipy.fftpack
 import scipy.signal
 import math
@@ -30,7 +30,9 @@ def compute_numerical_states(l_max, n_max, r):
         states = eigenstates[l]
         normalized_states = np.zeros_like(states)
         for i, state in enumerate(states.T):
-            normalized_states[:, i] = state / np.sqrt(simps(np.abs(state) ** 2, r))
+            normalized_states[:, i] = state / np.sqrt(
+                simpson(np.abs(state) ** 2, x=r)
+            )
         eigenstates[l] = normalized_states
 
     return eigenenergies, eigenstates
@@ -279,7 +281,7 @@ def compute_dipole_moment(r, psi):
             2
             * (l + 1)
             / np.sqrt((2 * l + 1) * (2 * l + 3))
-            * simps(r * psi[l].conj() * psi[l + 1], r)
+            * simpson(r * psi[l].conj() * psi[l + 1], x=r)
         )
 
     return dipole_moment.real
@@ -287,7 +289,7 @@ def compute_dipole_moment(r, psi):
 
 def compute_overlap(r, psi_t, psi_nl):
 
-    overlap = simps(psi_t.conj() * psi_nl, r)
+    overlap = simpson(psi_t.conj() * psi_nl, x=r)
     return overlap
 
 

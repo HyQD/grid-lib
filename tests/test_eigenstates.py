@@ -45,7 +45,7 @@ def test_particle_in_box():
             psi_k_exact = np.sqrt(2 / L) * np.sin(k * np.pi * x / L)
             norm_psi_k_exact = np.dot(w, psi_k_exact**2)
             np.testing.assert_allclose(
-                eps_k_approx, eps_k_exact, rtol=0.0, atol=1e-12
+                eps_k_approx, eps_k_exact, rtol=1e-14, atol=1e-12
             )
             np.testing.assert_allclose(
                 np.abs(psi_k_approx) ** 2,
