@@ -9,7 +9,7 @@ from utils import TDMAsolver, Tridiag, round_down
 
 from opt_einsum import contract
 
-from scipy.integrate import simps, trapz
+from scipy.integrate import trapezoid
 
 import time
 import tqdm
@@ -128,7 +128,9 @@ for i in range(1, n - 1):
         h_off_zr[i - 1] = 0
 
 psi_t = (phi[:, 0]).astype(np.complex128).reshape(Nz, Nr).T
-psi_t = psi_t * 1 / np.sqrt(trapz(trapz(psi_t.conj() * psi_t, dx=delta_z), dx=delta_r))
+psi_t = psi_t * 1 / np.sqrt(
+    trapezoid(trapezoid(psi_t.conj() * psi_t, dx=delta_z), dx=delta_r)
+)
 
 
 ones_k0_z = np.ones(Nz, dtype=np.complex128)
@@ -216,9 +218,10 @@ for i in tqdm.tqdm(range(num_steps - 1)):
     nr_its_conv[i] = local_counter.counter
     psi_t = psi_t.reshape((Nr, Nz))
 
-    norm[i] = trapz(trapz(psi_t.conj() * psi_t, dx=delta_z), dx=delta_r)
-    expec_z[i] = trapz(
-        trapz(psi_t.conj() * contract("B,AB->AB", z, psi_t), dx=delta_z), dx=delta_r
+    norm[i] = trapezoid(trapezoid(psi_t.conj() * psi_t, dx=delta_z), dx=delta_r)
+    expec_z[i] = trapezoid(
+        trapezoid(psi_t.conj() * contract("B,AB->AB", z, psi_t), dx=delta_z),
+        dx=delta_r,
     )
 
 

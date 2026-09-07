@@ -5,6 +5,6 @@ sphinx-panels
 sphinxcontrib.bibtex
 git+https://github.com/Holzhaus/sphinx-multiversion.git
 matplotlib
-numpy
+numpy>=2.5.2,<2.6
 numpydoc
 jinja2<3.1

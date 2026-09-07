@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import time
 from utils import TDMAsolver, Tridiag, round_down
 
-from scipy.integrate import simps, trapz
+from scipy.integrate import trapezoid
 
 from lasers_AE import sine_square_A_velocity, sine_square_A_length
 
@@ -131,7 +131,9 @@ h_mat_r_rz = Tridiag(diag=h_diag_rz, below=h_off_rz, above=h_off_rz)
 h_mat_z_zr = Tridiag(diag=h_diag_zr, below=h_off_zr, above=h_off_zr)
 
 state = (phi[:, 0]).astype(np.complex128).reshape(Nz, Nr).T
-state = state * 1 / np.sqrt(trapz(trapz(state.conj() * state, dx=delta_z), dx=delta_r))
+state = state * 1 / np.sqrt(
+    trapezoid(trapezoid(state.conj() * state, dx=delta_z), dx=delta_r)
+)
 
 
 if gauge == "length":
@@ -183,8 +185,8 @@ for i in np.arange(nt):
     state = state.reshape(Nz, Nr).T
 
     mat_temp = state.conj() * z_grid * state
-    dipmom[i] = -trapz(trapz(mat_temp, dx=delta_z), dx=delta_r)
-    norm[i] = trapz(trapz(state.conj() * state, dx=delta_z), dx=delta_r)
+    dipmom[i] = -trapezoid(trapezoid(mat_temp, dx=delta_z), dx=delta_r)
+    norm[i] = trapezoid(trapezoid(state.conj() * state, dx=delta_z), dx=delta_r)
     time_points[i] = t
 
     if not i % 1000:

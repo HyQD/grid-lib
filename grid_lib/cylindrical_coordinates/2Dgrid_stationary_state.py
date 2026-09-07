@@ -5,9 +5,6 @@ import scipy.sparse.linalg
 import matplotlib.pyplot as plt
 import time
 
-from scipy.integrate import simps, trapz
-
-
 #N_rho x N_z matrix
 
 d_rho = 0.1
