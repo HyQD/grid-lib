@@ -31,6 +31,7 @@ class SincDVR:
                     )
 
 class RadialSincDVR(PseudospectralGrid):
+    """Radial sinc DVR for reduced wavefunctions on ``0 < r <= r_max``."""
 
     def __repr__(self):
         return f"RadialSincDVR"
