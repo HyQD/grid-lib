@@ -28,6 +28,9 @@ dependencies = [
 test = [
   "pytest",
 ]
+fast = [
+  "py3nj",
+]
 docs = [
   "mkdocs>=1.6",
   "mkdocs-material>=9.5",
