@@ -1,6 +1,62 @@
 import numpy as np
 from sympy.physics.wigner import gaunt
 from numba import njit
+from functools import lru_cache
+
+try:
+    import py3nj as _py3nj
+except Exception:
+    _py3nj = None
+
+_ACTIVE_GAUNT_BACKEND = "auto"
+
+
+def set_gaunt_backend(backend):
+    """
+    Select backend for Gaunt evaluations used by get_y and get_ybar.
+
+    Parameters
+    ----------
+    backend : str
+        One of "auto", "sympy", or "py3nj".
+
+    Returns
+    -------
+    str
+        The selected backend mode.
+    """
+
+    global _ACTIVE_GAUNT_BACKEND
+    mode = str(backend).strip().lower()
+    if mode not in ("auto", "sympy", "py3nj"):
+        raise ValueError("backend must be one of: auto, sympy, py3nj")
+    if mode == "py3nj" and _py3nj is None:
+        raise RuntimeError("Requested backend 'py3nj' is not available")
+
+    _ACTIVE_GAUNT_BACKEND = mode
+    _gaunt_fast_cached.cache_clear()
+    return _ACTIVE_GAUNT_BACKEND
+
+
+def get_gaunt_backend(resolve=False):
+    """
+    Get current backend mode used for Gaunt evaluations.
+
+    Parameters
+    ----------
+    resolve : bool, optional
+        If True and mode is "auto", report the effective backend
+        ("py3nj" when available, otherwise "sympy").
+
+    Returns
+    -------
+    str
+        Backend mode or effective backend.
+    """
+
+    if resolve and _ACTIVE_GAUNT_BACKEND == "auto":
+        return "py3nj" if _py3nj is not None else "sympy"
+    return _ACTIVE_GAUNT_BACKEND
 
 
 def number_of_lm_states(l_max, m_max):
@@ -115,6 +171,158 @@ def setup_y_and_ybar_sympy(l_max, m_max, L_max, M_max):
                             ) * (-1) ** (m1 + M)
 
     return y, y_bar
+
+
+def _scalarize(value):
+    return float(np.asarray(value).reshape(-1)[0])
+
+
+@lru_cache(maxsize=None)
+def _gaunt_sympy_cached(l1, l2, l3, m1, m2, m3):
+    return float(gaunt(l1, l2, l3, m1, m2, m3).n(64))
+
+
+def _gaunt_py3nj(l1, l2, l3, m1, m2, m3):
+    if _py3nj is None:
+        raise RuntimeError("py3nj is not available")
+
+    if m1 + m2 + m3 != 0:
+        return 0.0
+    if abs(m1) > l1 or abs(m2) > l2 or abs(m3) > l3:
+        return 0.0
+    if l3 < abs(l1 - l2) or l3 > l1 + l2:
+        return 0.0
+
+    wigner3j = getattr(_py3nj, "wigner3j", None)
+    if wigner3j is None:
+        wigner3j = getattr(_py3nj, "wigner_3j", None)
+    if wigner3j is None:
+        raise AttributeError("py3nj does not expose wigner3j or wigner_3j")
+
+    try:
+        w000 = _scalarize(wigner3j(2 * l1, 2 * l2, 2 * l3, 0, 0, 0))
+        wmmm = _scalarize(wigner3j(2 * l1, 2 * l2, 2 * l3, 2 * m1, 2 * m2, 2 * m3))
+    except Exception:
+        w000 = _scalarize(wigner3j(l1, l2, l3, 0, 0, 0))
+        wmmm = _scalarize(wigner3j(l1, l2, l3, m1, m2, m3))
+
+    prefactor = np.sqrt((2 * l1 + 1) * (2 * l2 + 1) * (2 * l3 + 1) / (4 * np.pi))
+    return prefactor * w000 * wmmm
+
+
+@lru_cache(maxsize=None)
+def _gaunt_fast_cached(l1, l2, l3, m1, m2, m3):
+    backend = get_gaunt_backend(resolve=True)
+
+    if backend == "py3nj":
+        return _gaunt_py3nj(l1, l2, l3, m1, m2, m3)
+
+    if backend == "sympy":
+        return _gaunt_sympy_cached(l1, l2, l3, m1, m2, m3)
+
+    if _py3nj is not None:
+        try:
+            return _gaunt_py3nj(l1, l2, l3, m1, m2, m3)
+        except Exception:
+            pass
+    return _gaunt_sympy_cached(l1, l2, l3, m1, m2, m3)
+
+
+def _build_lm_state_tables(l_max, m_max):
+    state_table = {}
+    for m in range(-m_max, m_max + 1):
+        l_values = np.arange(abs(m), l_max + 1, dtype=int)
+        indices = np.array([LM_to_I(l, m, l_max, m_max) for l in l_values], dtype=int)
+        state_table[m] = (l_values, indices)
+    return state_table
+
+
+def get_y(l_max, m_max, L_max, M_max):
+    """
+    Compute y tensor with the same signature and output shape as setup_y_and_ybar_sympy.
+
+    Uses exact magnetic-quantum-number selection rules to skip zero Gaunt evaluations:
+    m2 = m1 - M.
+    """
+
+    n_L = L_max + 1
+
+    n_LM = number_of_lm_states(L_max, M_max)
+    n_lm = number_of_lm_states(l_max, m_max)
+    y = np.zeros((n_LM, n_lm, n_lm))
+
+    state_table = _build_lm_state_tables(l_max, m_max)
+
+    for M in range(-M_max, M_max + 1):
+        for L in range(abs(M), n_L):
+            I_LM = LM_to_I(L, M, L_max, M_max)
+            for m1 in range(-m_max, m_max + 1):
+                m2 = m1 - M
+                if m2 < -m_max or m2 > m_max:
+                    continue
+
+                l1_values, i1_values = state_table[m1]
+                _, i2_values = state_table[m2]
+
+                for l1, I_l1m1 in zip(l1_values, i1_values):
+                    l2_min = max(abs(m2), abs(l1 - L))
+                    l2_max = min(l_max, l1 + L)
+                    if l2_min > l2_max:
+                        continue
+
+                    sign = -1.0 if (m1 % 2) else 1.0
+                    start = l2_min - abs(m2)
+                    stop = l2_max - abs(m2) + 1
+                    for l2, I_l2m2 in zip(range(l2_min, l2_max + 1), i2_values[start:stop]):
+                        y[I_LM, I_l1m1, I_l2m2] = sign * _gaunt_fast_cached(
+                            int(l1), L, int(l2), -m1, M, m2
+                        )
+
+    return y
+
+
+def get_ybar(l_max, m_max, L_max, M_max):
+    """
+    Compute y_bar tensor with the same signature and output shape as setup_y_and_ybar_sympy.
+
+    Uses exact magnetic-quantum-number selection rules to skip zero Gaunt evaluations:
+    m2 = m1 + M.
+    """
+
+    n_L = L_max + 1
+
+    n_LM = number_of_lm_states(L_max, M_max)
+    n_lm = number_of_lm_states(l_max, m_max)
+    y_bar = np.zeros((n_LM, n_lm, n_lm))
+
+    state_table = _build_lm_state_tables(l_max, m_max)
+
+    for M in range(-M_max, M_max + 1):
+        for L in range(abs(M), n_L):
+            I_LM = LM_to_I(L, M, L_max, M_max)
+            for m1 in range(-m_max, m_max + 1):
+                m2 = m1 + M
+                if m2 < -m_max or m2 > m_max:
+                    continue
+
+                l1_values, i1_values = state_table[m1]
+                _, i2_values = state_table[m2]
+
+                for l1, I_l1m1 in zip(l1_values, i1_values):
+                    l2_min = max(abs(m2), abs(l1 - L))
+                    l2_max = min(l_max, l1 + L)
+                    if l2_min > l2_max:
+                        continue
+
+                    sign = -1.0 if ((m1 + M) % 2) else 1.0
+                    start = l2_min - abs(m2)
+                    stop = l2_max - abs(m2) + 1
+                    for l2, I_l2m2 in zip(range(l2_min, l2_max + 1), i2_values[start:stop]):
+                        y_bar[I_LM, I_l1m1, I_l2m2] = sign * _gaunt_fast_cached(
+                            int(l1), L, int(l2), -m1, -M, m2
+                        )
+
+    return y_bar
 
 
 def setup_y_and_ybar_compact(l_max, m_max, L_max, M_max):

@@ -1,7 +1,12 @@
 import numpy as np
+import pytest
 from grid_lib.spherical_coordinates.angular_momentum import (
     number_of_lm_states,
     LM_to_I,
+    get_y,
+    get_ybar,
+    get_gaunt_backend,
+    set_gaunt_backend,
     setup_y_and_ybar_sympy,
     setup_y_and_ybar_compact,
 )
@@ -43,3 +48,41 @@ def test_gaunt_full_vs_compact():
                                 y_bar[I_LM21, I_l1m1, I_l2m2],
                                 y_bar_c[L, I_l1m1, I_l2m2],
                             )
+
+
+def test_split_y_and_ybar_match_legacy_sympy():
+    l_max = 3
+    m_max = l_max
+
+    L_max = 2 * l_max
+    M_max = 2 * m_max
+
+    y_ref, y_bar_ref = setup_y_and_ybar_sympy(l_max, m_max, L_max, M_max)
+    y = get_y(l_max, m_max, L_max, M_max)
+    y_bar = get_ybar(l_max, m_max, L_max, M_max)
+
+    assert np.allclose(y_ref, y)
+    assert np.allclose(y_bar_ref, y_bar)
+
+
+def test_explicit_sympy_backend_matches_legacy():
+    l_max = 3
+    m_max = l_max
+    L_max = 2 * l_max
+    M_max = 2 * m_max
+
+    previous_mode = get_gaunt_backend()
+    try:
+        set_gaunt_backend("sympy")
+        y_ref, y_bar_ref = setup_y_and_ybar_sympy(l_max, m_max, L_max, M_max)
+        y = get_y(l_max, m_max, L_max, M_max)
+        y_bar = get_ybar(l_max, m_max, L_max, M_max)
+        assert np.allclose(y_ref, y)
+        assert np.allclose(y_bar_ref, y_bar)
+    finally:
+        set_gaunt_backend(previous_mode)
+
+
+def test_set_gaunt_backend_invalid_mode():
+    with pytest.raises(ValueError):
+        set_gaunt_backend("invalid")
