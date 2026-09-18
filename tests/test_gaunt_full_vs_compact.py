@@ -5,6 +5,8 @@ from grid_lib.spherical_coordinates.angular_momentum import (
     LM_to_I,
     get_y,
     get_ybar,
+    get_y_value,
+    get_ybar_value,
     get_gaunt_backend,
     set_gaunt_backend,
     setup_y_and_ybar_sympy,
@@ -41,7 +43,8 @@ def test_gaunt_full_vs_compact():
 
                         if abs(M12) <= L_max:
                             assert np.allclose(
-                                y[I_LM12, I_l1m1, I_l2m2], y_c[L, I_l1m1, I_l2m2]
+                                y[I_LM12, I_l1m1, I_l2m2],
+                                y_c[L, I_l1m1, I_l2m2],
                             )
                         if abs(M21) <= L_max:
                             assert np.allclose(
@@ -86,3 +89,43 @@ def test_explicit_sympy_backend_matches_legacy():
 def test_set_gaunt_backend_invalid_mode():
     with pytest.raises(ValueError):
         set_gaunt_backend("invalid")
+
+
+def test_scalar_y_helpers_match_tensor_entries():
+    l_max = 3
+    m_max = l_max
+    L_max = 2 * l_max
+    M_max = 2 * m_max
+
+    y = get_y(l_max, m_max, L_max, M_max)
+    y_bar = get_ybar(l_max, m_max, L_max, M_max)
+
+    for M in range(-M_max, M_max + 1):
+        for L in range(abs(M), L_max + 1):
+            I_LM = LM_to_I(L, M, L_max, M_max)
+            for m1 in range(-m_max, m_max + 1):
+                for l1 in range(abs(m1), l_max + 1):
+                    I_l1m1 = LM_to_I(l1, m1, l_max, m_max)
+
+                    m2_y = m1 - M
+                    if -m_max <= m2_y <= m_max:
+                        for l2 in range(abs(m2_y), l_max + 1):
+                            I_l2m2 = LM_to_I(l2, m2_y, l_max, m_max)
+                            assert np.allclose(
+                                get_y_value(L, M, l1, m1, l2, m2_y),
+                                y[I_LM, I_l1m1, I_l2m2],
+                            )
+
+                    m2_ybar = m1 + M
+                    if -m_max <= m2_ybar <= m_max:
+                        for l2 in range(abs(m2_ybar), l_max + 1):
+                            I_l2m2 = LM_to_I(l2, m2_ybar, l_max, m_max)
+                            assert np.allclose(
+                                get_ybar_value(L, M, l1, m1, l2, m2_ybar),
+                                y_bar[I_LM, I_l1m1, I_l2m2],
+                            )
+
+
+def test_scalar_y_helpers_enforce_selection_rules():
+    assert get_y_value(2, 1, 2, 1, 2, 0) == 0.0
+    assert get_ybar_value(2, 1, 2, 1, 2, 0) == 0.0

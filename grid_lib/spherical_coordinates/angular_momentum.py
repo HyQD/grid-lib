@@ -394,6 +394,46 @@ def _build_lm_state_tables(l_max, m_max):
     return state_table
 
 
+def get_y_value(L, M, l1, m1, l2, m2):
+    """
+    Compute a single y coefficient.
+
+        y(L,M,l1,m1,l2,m2) = (-1)^m1 * gaunt(l1, L, l2, -m1, M, m2)
+    """
+
+    if abs(M) > L:
+        return 0.0
+    if abs(m1) > l1 or abs(m2) > l2:
+        return 0.0
+    if m2 != (m1 - M):
+        return 0.0
+    if l2 < abs(l1 - L) or l2 > (l1 + L):
+        return 0.0
+
+    sign = -1.0 if (m1 % 2) else 1.0
+    return sign * _gaunt_fast_cached(int(l1), int(L), int(l2), -int(m1), int(M), int(m2))
+
+
+def get_ybar_value(L, M, l1, m1, l2, m2):
+    """
+    Compute a single y_bar coefficient.
+
+        y_bar(L,M,l1,m1,l2,m2) = (-1)^(m1+M) * gaunt(l1, L, l2, -m1, -M, m2)
+    """
+
+    if abs(M) > L:
+        return 0.0
+    if abs(m1) > l1 or abs(m2) > l2:
+        return 0.0
+    if m2 != (m1 + M):
+        return 0.0
+    if l2 < abs(l1 - L) or l2 > (l1 + L):
+        return 0.0
+
+    sign = -1.0 if ((m1 + M) % 2) else 1.0
+    return sign * _gaunt_fast_cached(int(l1), int(L), int(l2), -int(m1), -int(M), int(m2))
+
+
 def get_y(l_max, m_max, L_max, M_max):
     """
     Compute y tensor with the same signature and output shape as setup_y_and_ybar_sympy.
