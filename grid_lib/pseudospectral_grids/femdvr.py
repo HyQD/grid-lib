@@ -3,7 +3,7 @@ from grid_lib.pseudospectral_grids.gauss_legendre_lobatto import (
     GaussLegendreLobatto,
     Linear_map,
 )
-from .pseudospectral_grid import PseudospectralGrid 
+from .pseudospectral_grid import PseudospectralGrid
 from scipy.sparse import coo_matrix
 import matplotlib.pyplot as plt
 from typing import Type
@@ -141,6 +141,80 @@ class FEMDVR(PseudospectralGrid):
         self.dvr = dvr
         self.edge_indices = block_start2.copy()
         self.edge_indices[-1] -= 1
+        self.element_class = element_class
+
+    @staticmethod
+    def cardinal_values(nodes, x):
+        """Evaluate local Lagrange cardinal functions.
+
+        This helper is used by FEMDVR interpolation routines.  It assumes the
+        local basis is represented by Lagrange cardinal functions on the
+        supplied element nodes, as in finite-element Gauss-Legendre-Lobatto DVR.
+        """
+        nodes = np.asarray(nodes)
+        close = np.isclose(
+            x, nodes, rtol=0.0, atol=100.0 * np.finfo(float).eps
+        )
+        if np.any(close):
+            values = np.zeros_like(nodes, dtype=float)
+            values[np.argmax(close)] = 1.0
+            return values
+
+        barycentric_weights = np.ones_like(nodes, dtype=float)
+        for j in range(nodes.size):
+            barycentric_weights[j] = 1.0 / np.prod(
+                nodes[j] - np.delete(nodes, j)
+            )
+
+        scaled = barycentric_weights / (x - nodes)
+        return scaled / np.sum(scaled)
+
+    def interpolation_matrix(self, points):
+        """Evaluate global FEMDVR cardinal functions at physical points.
+
+        Rows correspond to ``points`` and columns correspond to the global
+        interface-matched FEMDVR nodes.  Points outside the grid interval are
+        represented by zero rows.
+        """
+        points = np.asarray(points)
+        values = np.zeros((points.size, self.r.size))
+        element_row_start = np.concatenate(([0], np.cumsum(self.n_points[:-1])))
+
+        for point_index, point in enumerate(points):
+            if point < self.nodes[0] or point > self.nodes[-1]:
+                continue
+
+            if np.isclose(point, self.nodes[-1]):
+                element = self.n_intervals - 1
+            else:
+                element = np.searchsorted(self.nodes, point, side="right") - 1
+                element = int(np.clip(element, 0, self.n_intervals - 1))
+
+            a = self.nodes[element]
+            b = self.nodes[element + 1]
+            x = 2.0 * (point - a) / (b - a) - 1.0
+
+            local = self.cardinal_values(self.dvr[element].x, x)
+            start = element_row_start[element]
+            stop = start + self.n_points[element]
+            values[point_index] = local @ self.R[start:stop, :]
+
+        return values
+
+    def delta_matrix(self, points, include_boundaries=False):
+        """Represent off-grid delta functions in the FEMDVR basis.
+
+        The returned columns approximate ``delta(r - points[j])`` using
+        cardinal values divided by quadrature weights.  By default only the
+        inner, non-boundary rows are returned, matching the radial Poisson
+        solvers.
+        """
+        interpolation = self.interpolation_matrix(points)
+
+        if include_boundaries:
+            return interpolation.T / self.weights[:, np.newaxis]
+
+        return interpolation[:, 1:-1].T / self.weights[1:-1, np.newaxis]
 
 
 if __name__ == "__main__":
