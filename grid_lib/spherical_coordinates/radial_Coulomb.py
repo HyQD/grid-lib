@@ -18,18 +18,18 @@ def radial_Coulomb(GLL, n_L):
     return W
 
 
-def _as_charge_gamma_terms(charge_gamma_terms):
-    terms = list(charge_gamma_terms)
+def _as_gamma_charge_terms(gamma_charge_terms):
+    terms = list(gamma_charge_terms)
     for term in terms:
         if len(term) != 3:
             raise ValueError(
                 "Each Coulomb term must be a tuple/list "
-                "(q1, q2, gamma)."
+                "(gamma,q1,q2)."
             )
     return terms
 
 
-def radial_Coulomb_femdvr_two_grid(r1_grid, r2_grid, n_L, charge_gamma_terms):
+def radial_Coulomb_femdvr_two_grid(r1_grid, r2_grid, n_L, gamma_charge_terms):
     r"""
     Build generalized two-grid FEMDVR radial Coulomb matrices.
 
@@ -50,8 +50,8 @@ def radial_Coulomb_femdvr_two_grid(r1_grid, r2_grid, n_L, charge_gamma_terms):
         Source FEMDVR grid.
     n_L : int
         Number of angular momenta to compute.
-    charge_gamma_terms
-        Iterable of ``(q1, q2, gamma)`` tuples.
+    gamma_charge_terms
+        Iterable of ``(gamma,q1,q2)`` tuples.
 
     Returns
     -------
@@ -64,7 +64,7 @@ def radial_Coulomb_femdvr_two_grid(r1_grid, r2_grid, n_L, charge_gamma_terms):
     n_r2 = len(r2)
     W = np.zeros((n_L, n_r1, n_r2))
 
-    for q1, q2, gamma in _as_charge_gamma_terms(charge_gamma_terms):
+    for gamma, q1, q2 in _as_gamma_charge_terms(gamma_charge_terms):
         u_L = solve_radial_Poisson_femdvr_two_grid(
             r1_grid, r2_grid, n_L, gamma
         )
