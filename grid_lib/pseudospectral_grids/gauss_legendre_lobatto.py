@@ -47,7 +47,13 @@ class GaussLegendreLobatto(PseudospectralGrid):
         self.x = np.zeros(N + 1)
         self.x[0] = -1
         self.x[-1] = 1
-        self.x[1:-1] = legendre.legroots(self.dc)
+        roots = legendre.legroots(self.dc)
+        if np.iscomplexobj(roots):
+            if np.allclose(roots.imag, 0.0):
+                roots = roots.real
+            else:
+                raise ValueError("Legendre derivative roots contain non-negligible imaginary parts")
+        self.x[1:-1] = roots
 
         self.D1 = np.zeros((N + 1, N + 1))
         self.D2 = np.zeros((N + 1, N + 1))
