@@ -20,3 +20,6 @@ pip-wheel-metadata/
 
 # Local development scripts and outputs
 dev/
+
+# Editor settings
+.vscode/
