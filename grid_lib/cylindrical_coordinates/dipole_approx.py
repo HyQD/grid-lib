@@ -70,9 +70,7 @@ n = Nr * Nz
 print("mat dim:", n)
 
 a = 0.5
-h_diag_rz = a * 2 * np.ones(n) * (1 / delta_r**2 + 1 / delta_z**2) + V_grid.flatten(
-    "F"
-)
+h_diag_rz = a * 2 * np.ones(n) * (1 / delta_r**2 + 1 / delta_z**2) + V_grid.flatten("F")
 h_off_rz = -a * (np.ones(n - 1) / (delta_r**2))
 h_off_off_rz = -a * np.ones(n - Nr) / (delta_z**2)
 
@@ -128,8 +126,10 @@ for i in range(1, n - 1):
         h_off_zr[i - 1] = 0
 
 psi_t = (phi[:, 0]).astype(np.complex128).reshape(Nz, Nr).T
-psi_t = psi_t * 1 / np.sqrt(
-    trapezoid(trapezoid(psi_t.conj() * psi_t, dx=delta_z), dx=delta_r)
+psi_t = (
+    psi_t
+    * 1
+    / np.sqrt(trapezoid(trapezoid(psi_t.conj() * psi_t, dx=delta_z), dx=delta_r))
 )
 
 

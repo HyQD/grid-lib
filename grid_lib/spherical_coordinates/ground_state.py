@@ -2,7 +2,6 @@ import numpy as np
 
 
 def get_hydrogenic_orbitals(GLL, l_max, n_s, Z):
-
     """
     Compute the n_s lowest lying normalized hydrogenic orbitals for l=0,...,l_max.
 

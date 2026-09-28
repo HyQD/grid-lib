@@ -56,9 +56,7 @@ class BiCGstab(Propagator):
         preconditioner = M2Psi(
             self.angular_matrix_elements, self.radial_matrix_elements, dt
         )
-        M_linear = LinearOperator(
-            (nr * (n_lm), nr * (n_lm)), matvec=preconditioner
-        )
+        M_linear = LinearOperator((nr * (n_lm), nr * (n_lm)), matvec=preconditioner)
 
         ### RUN ##########################
 
@@ -66,12 +64,8 @@ class BiCGstab(Propagator):
             time_points[i + 1] = (i + 1) * dt
             ti = time_points[i] + dt / 2
 
-            Ap_lambda = lambda psi, ti=ti: psi.ravel() + 1j * dt / 2 * rhs(
-                psi, ti
-            )
-            Ap_linear = LinearOperator(
-                (nr * (n_lm), nr * (n_lm)), matvec=Ap_lambda
-            )
+            Ap_lambda = lambda psi, ti=ti: psi.ravel() + 1j * dt / 2 * rhs(psi, ti)
+            Ap_linear = LinearOperator((nr * (n_lm), nr * (n_lm)), matvec=Ap_lambda)
             z = psi_t.ravel() - 1j * dt / 2 * rhs(psi_t, ti)
 
             local_counter = Counter()
@@ -90,19 +84,13 @@ class BiCGstab(Propagator):
             dpsi_t_dr = contract("ij, Ij->Ii", D1, psi_t)
 
             expec_x[i + 1] = expec_x_i(psi_t, weights, r, x_Omega)
-            expec_px[i + 1] = expec_p_i(
-                psi_t, dpsi_t_dr, weights, r, x_Omega, H_x_beta
-            )
+            expec_px[i + 1] = expec_p_i(psi_t, dpsi_t_dr, weights, r, x_Omega, H_x_beta)
 
             expec_y[i + 1] = expec_x_i(psi_t, weights, r, y_Omega)
-            expec_py[i + 1] = expec_p_i(
-                psi_t, dpsi_t_dr, weights, r, y_Omega, H_y_beta
-            )
+            expec_py[i + 1] = expec_p_i(psi_t, dpsi_t_dr, weights, r, y_Omega, H_y_beta)
 
             expec_z[i + 1] = expec_x_i(psi_t, weights, r, z_Omega)
-            expec_pz[i + 1] = expec_p_i(
-                psi_t, dpsi_t_dr, weights, r, z_Omega, H_z_beta
-            )
+            expec_pz[i + 1] = expec_p_i(psi_t, dpsi_t_dr, weights, r, z_Omega, H_z_beta)
 
         samples = {
             "time_points": time_points,

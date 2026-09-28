@@ -53,9 +53,7 @@ def analytic_direction_cosine_matrix_element(component, l1, m1, l2, m2):
     #   sin(theta) exp(-i phi) Y_lm
     #
     minus = {
-        (l + 1, m - 1): np.sqrt(
-            (l - m + 1) * (l - m + 2) / ((2 * l + 1) * (2 * l + 3))
-        )
+        (l + 1, m - 1): np.sqrt((l - m + 1) * (l - m + 2) / ((2 * l + 1) * (2 * l + 3)))
     }
 
     if l > 0:

@@ -7,7 +7,6 @@ from numba import njit
 
 
 def compute_mean_field_einsum(A, W, y, L_max, M_max):
-
     """
     Compute the radial (L,M) components of the mean-field potential W^q_s(\mathbf{r})
     given by
@@ -81,7 +80,6 @@ def XY_diag(X, Y):
 
 @njit
 def compute_mean_field_numba(A, W, y, L_max, M_max):
-
     """
     Compute the radial (L,M) components of the mean-field potential W^q_s(\mathbf{r})
     given by

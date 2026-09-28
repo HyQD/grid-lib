@@ -54,9 +54,7 @@ for L in range(L_max + 1):
 
 error = G_solved - G_exact
 
-fig, axes = plt.subplots(
-    L_max + 1, 3, figsize=(12, 10), constrained_layout=True
-)
+fig, axes = plt.subplots(L_max + 1, 3, figsize=(12, 10), constrained_layout=True)
 extent = [R_grid.r[1], R_grid.r[-2], r_grid.r[1], r_grid.r[-2]]
 
 for L in range(L_max + 1):
@@ -69,14 +67,16 @@ for L in range(L_max + 1):
         (
             error[L],
             "difference",
-            SymLogNorm(
-                linthresh=max(err_vmax * 1e-8, np.finfo(float).tiny),
-                vmin=-err_vmax,
-                vmax=err_vmax,
-                base=10,
-            )
-            if err_vmax > 0
-            else None,
+            (
+                SymLogNorm(
+                    linthresh=max(err_vmax * 1e-8, np.finfo(float).tiny),
+                    vmin=-err_vmax,
+                    vmax=err_vmax,
+                    base=10,
+                )
+                if err_vmax > 0
+                else None
+            ),
             err_vmax,
         ),
     ]

@@ -147,7 +147,6 @@ class Rk4:
         return -1j * (H0_psi - et_psi + 2 * Vdir_psi - Vex_psi)
 
     def step(self, phi, t0):
-
         """
         Integrate the ODE
             i dot(phi)_i(t) = F(phi, t)*phi_i(t)
@@ -202,7 +201,6 @@ class CrankNicolson:
         return F_phi
 
     def step(self, phi, t0):
-
         """
         Integrate the ODE
             i dot(phi)_i(t) = F(phi, t)*phi_i(t)
@@ -211,9 +209,7 @@ class CrankNicolson:
         tn = t0 + self.dt / 2
         psi = phi.copy()
 
-        psi_tmp = (
-            phi.ravel() - 1j * self.dt / 2 * self.Fphi(psi, phi, tn).ravel()
-        )
+        psi_tmp = phi.ravel() - 1j * self.dt / 2 * self.Fphi(psi, phi, tn).ravel()
 
         Ap_lambda = (
             lambda phi, tn=tn, psi=psi: phi.ravel()
@@ -282,8 +278,7 @@ class CMF2:
         step_length = tstop - t0
 
         psi_tmp = (
-            phi.ravel()
-            - 1j * step_length / 2 * self.Fphi(psi, phi, t_mid).ravel()
+            phi.ravel() - 1j * step_length / 2 * self.Fphi(psi, phi, t_mid).ravel()
         )
 
         Ap_lambda = (
@@ -317,7 +312,6 @@ class CMF2:
         return phi_new
 
     def step(self, phi, t0):
-
         """
         Integrate the ODE
             i dot(phi)_i(t) = F(phi, t)*phi_i(t)
@@ -328,8 +322,6 @@ class CMF2:
 
         phi_tmp = self.local_step(psi, phi, t0, t0 + self.dt / 2)
         phi_half = self.local_step(phi_tmp, phi, t0, t0 + self.dt / 2)
-        phi_new = self.local_step(
-            phi_tmp, phi_half, t0 + self.dt / 2, t0 + self.dt
-        )
+        phi_new = self.local_step(phi_tmp, phi_half, t0 + self.dt / 2, t0 + self.dt)
 
         return phi_new

@@ -77,9 +77,7 @@ class sine_square_laser:
 
 
 class square_length_dipole:
-    def __init__(
-        self, field_strength, omega, ncycles, phase=0.0, t0=0.0, **kwargs
-    ):
+    def __init__(self, field_strength, omega, ncycles, phase=0.0, t0=0.0, **kwargs):
         self.field_strength = field_strength
         self.A0 = field_strength / omega
         self.omega = omega
@@ -113,9 +111,7 @@ class square_length_dipole:
 
 
 class square_velocity_dipole:
-    def __init__(
-        self, field_strength, omega, ncycles, phase=0.0, t0=0.0, **kwargs
-    ):
+    def __init__(self, field_strength, omega, ncycles, phase=0.0, t0=0.0, **kwargs):
         self.field_strength = field_strength
         self.A0 = field_strength / omega
         self.omega = omega
@@ -142,9 +138,7 @@ class square_velocity_dipole:
 
 
 class square_velocity_first:
-    def __init__(
-        self, field_strength, omega, ncycles, phase=0.0, t0=0.0, **kwargs
-    ):
+    def __init__(self, field_strength, omega, ncycles, phase=0.0, t0=0.0, **kwargs):
         self.field_strength = field_strength
         self.A0 = field_strength / omega
         self.omega = omega
@@ -181,9 +175,7 @@ class square_velocity_first:
 
 
 class square_velocity_exp_p:
-    def __init__(
-        self, field_strength, omega, ncycles, phase=0.0, t0=0.0, **kwargs
-    ):
+    def __init__(self, field_strength, omega, ncycles, phase=0.0, t0=0.0, **kwargs):
         self.field_strength = field_strength
         self.A0 = field_strength / omega
         self.omega = omega
@@ -204,9 +196,7 @@ class square_velocity_exp_p:
 
 
 class square_velocity_exp_m:
-    def __init__(
-        self, field_strength, omega, ncycles, phase=0.0, t0=0.0, **kwargs
-    ):
+    def __init__(self, field_strength, omega, ncycles, phase=0.0, t0=0.0, **kwargs):
         self.field_strength = field_strength
         self.A0 = field_strength / omega
         self.omega = omega
@@ -227,9 +217,7 @@ class square_velocity_exp_m:
 
 
 class square_velocity_exp2_p:
-    def __init__(
-        self, field_strength, omega, ncycles, phase=0.0, t0=0.0, **kwargs
-    ):
+    def __init__(self, field_strength, omega, ncycles, phase=0.0, t0=0.0, **kwargs):
         self.field_strength = field_strength
         self.A0 = field_strength / omega
         self.omega = omega
@@ -250,9 +238,7 @@ class square_velocity_exp2_p:
 
 
 class square_velocity_exp2_m:
-    def __init__(
-        self, field_strength, omega, ncycles, phase=0.0, t0=0.0, **kwargs
-    ):
+    def __init__(self, field_strength, omega, ncycles, phase=0.0, t0=0.0, **kwargs):
         self.field_strength = field_strength
         self.A0 = field_strength / omega
         self.omega = omega

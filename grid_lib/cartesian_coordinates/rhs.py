@@ -63,9 +63,7 @@ def Vexchange_phi(psi, phi, w12):
 
     for i in range(psi.shape[1]):
         for j in range(phi.shape[1]):
-            Vex_phi[:, i] += (
-                compute_mean_field(w12, psi[:, j], phi[:, i]) * psi[:, j]
-            )
+            Vex_phi[:, i] += compute_mean_field(w12, psi[:, j], phi[:, i]) * psi[:, j]
 
     return Vex_phi
 

@@ -14,8 +14,12 @@ def test_system_grid_1d_sinc_shapes():
 
 
 def test_system_grid_1d_gll_boundary_trimming():
-    with_boundaries = Grid1D(("gll", {"N": 6, "x0": 0.0, "xN": 2.0, "remove_boundaries": False}))
-    without_boundaries = Grid1D(("gll", {"N": 6, "x0": 0.0, "xN": 2.0, "remove_boundaries": True}))
+    with_boundaries = Grid1D(
+        ("gll", {"N": 6, "x0": 0.0, "xN": 2.0, "remove_boundaries": False})
+    )
+    without_boundaries = Grid1D(
+        ("gll", {"N": 6, "x0": 0.0, "xN": 2.0, "remove_boundaries": True})
+    )
 
     assert without_boundaries.n_grid == with_boundaries.n_grid - 2
     assert without_boundaries.D1.shape[0] == with_boundaries.D1.shape[0] - 2

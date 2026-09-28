@@ -18,9 +18,7 @@ x_uniform = np.linspace(x_min, x_max, 400)
 x_combined = np.sort(np.concatenate([x_leg, x_uniform]))
 
 plt.figure()
-plt.title(
-    "Cardinal functions for Gauss-Legendre-Lobatto grid of order N=%d" % N
-)
+plt.title("Cardinal functions for Gauss-Legendre-Lobatto grid of order N=%d" % N)
 for j in range(0, N + 1):
     g_j = GLL_x.cardinal_function(x_combined, j)
     plt.plot(x_combined, g_j, label=r"$g_{%d}(x)$" % j)

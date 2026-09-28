@@ -6,6 +6,7 @@ from grid_lib.pseudospectral_grids.gauss_legendre_lobatto import (
 )
 from grid_lib.pseudospectral_grids.femdvr import FEMDVR
 
+
 def test_particle_in_box():
     print()
     print(f"** Test 1D particle-in-box **")
@@ -16,9 +17,7 @@ def test_particle_in_box():
         x_min = 0
         x_max = L
 
-        GLL = GaussLegendreLobatto(
-            N, Linear_map(x_min, x_max), symmetrize=False
-        )
+        GLL = GaussLegendreLobatto(N, Linear_map(x_min, x_max), symmetrize=False)
         x = GLL.r[1:-1]
         w = GLL.weights[1:-1]
         x_dot = GLL.r_dot[1:-1]
@@ -77,9 +76,7 @@ def test_harmonic_oscillator():
         x_min = -np.sqrt(37 / a)
         x_max = np.sqrt(37 / a)
 
-        GLL = GaussLegendreLobatto(
-            N, Linear_map(x_min, x_max), symmetrize=False
-        )
+        GLL = GaussLegendreLobatto(N, Linear_map(x_min, x_max), symmetrize=False)
         x = GLL.r[1:-1]
         w = GLL.weights[1:-1]
         x_dot = GLL.r_dot[1:-1]
@@ -109,9 +106,7 @@ def test_harmonic_oscillator():
                 * Hermite(k, np.sqrt(omega) * x)
                 * np.exp(-0.5 * omega * x**2)
             )
-            np.testing.assert_allclose(
-                eps_k_approx, eps_k_exact, rtol=0.0, atol=1e-12
-            )
+            np.testing.assert_allclose(eps_k_approx, eps_k_exact, rtol=0.0, atol=1e-12)
             np.testing.assert_allclose(
                 np.abs(psi_k_approx) ** 2,
                 np.abs(psi_k_exact) ** 2,
@@ -149,9 +144,7 @@ def test_hydrogenic_spherical_coordinates():
         N = 200
         r_min = 0
         r_max = 140
-        GLL = GaussLegendreLobatto(
-            N, Linear_map(r_min, r_max), symmetrize=False
-        )
+        GLL = GaussLegendreLobatto(N, Linear_map(r_min, r_max), symmetrize=False)
         r = GLL.r[1:-1]
         w = GLL.weights[1:-1]
         r_dot = GLL.r_dot[1:-1]
@@ -188,9 +181,7 @@ def test_hydrogenic_spherical_coordinates():
             norm_u_n3_l_approx = np.dot(w, u_n3_l_approx**2)
             u_n3_l_approx /= np.sqrt(norm_u_n3_l_approx)
 
-            np.testing.assert_allclose(
-                eps[0:3], eps_exact, rtol=0.0, atol=1e-12
-            )
+            np.testing.assert_allclose(eps[0:3], eps_exact, rtol=0.0, atol=1e-12)
             np.testing.assert_allclose(
                 np.abs(u_n1_l) ** 2,
                 np.abs(u_n1_l_approx) ** 2,
@@ -214,6 +205,7 @@ def test_hydrogenic_spherical_coordinates():
     test_hydrogenic_sphc(2)
     test_hydrogenic_sphc(4)
     test_hydrogenic_sphc(10)
+
 
 def test_ho_fem():
 

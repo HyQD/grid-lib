@@ -38,7 +38,6 @@ from grid_lib.spherical_coordinates.properties import expec_x_i, expec_p_i
 from grid_lib.spherical_coordinates.ground_state import compute_ground_state
 from grid_lib.spherical_coordinates.propagators import BiCGstab
 
-
 ### INPUTS #######################
 
 # pulse inputs

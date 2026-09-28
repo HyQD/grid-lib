@@ -19,7 +19,9 @@ from grid_lib.spherical_coordinates.radial_matrix_elements import (
 )
 
 import grid_lib as gb
+
 print(f"Grid-lib version: {gb.__version__}")
+
 
 def kron_delta(x1, x2):
     if x1 == x2:
@@ -71,18 +73,10 @@ for m in m_list:
                         * kron_delta(k1, k2)
                         * kron_delta(l1, l2)
                     )
+                    H[row, col] += -1 / r[k2] * kron_delta(k1, k2) * kron_delta(l1, l2)
+                    H[row, col] += B * m / 2 * kron_delta(k1, k2) * kron_delta(l1, l2)
                     H[row, col] += (
-                        -1 / r[k2] * kron_delta(k1, k2) * kron_delta(l1, l2)
-                    )
-                    H[row, col] += (
-                        B * m / 2 * kron_delta(k1, k2) * kron_delta(l1, l2)
-                    )
-                    H[row, col] += (
-                        B**2
-                        / 8
-                        * r[k2] ** 2
-                        * H_Bz[l1, l2].real
-                        * kron_delta(k1, k2)
+                        B**2 / 8 * r[k2] ** 2 * H_Bz[l1, l2].real * kron_delta(k1, k2)
                     )
                     col += 1
             row += 1

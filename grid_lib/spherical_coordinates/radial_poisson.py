@@ -73,9 +73,9 @@ def solve_radial_Poisson_dvr(GLL, n_L):
 
         tilde_vL_hom = np.zeros((n_r, n_r))
         for a in range(n_r):
-            tilde_vL_hom[:, a] = (
-                r[a] ** L * w_r[a] / r_max ** (2 * L + 1)
-            ) * r ** (L + 1)
+            tilde_vL_hom[:, a] = (r[a] ** L * w_r[a] / r_max ** (2 * L + 1)) * r ** (
+                L + 1
+            )
 
         tilde_vL[L] = tilde_vL_inhom + tilde_vL_hom
 
@@ -150,12 +150,10 @@ def solve_radial_Poisson_femdvr_two_grid(r1_grid, r2_grid, n_L, gamma):
         B_L = -(2 * L + 1) * delta * source_strength[np.newaxis, :]
         u_inhomogeneous = solve(D2_L, B_L, assume_a="gen")
 
-        boundary = _outer_boundary_u(
-            r1_boundary, source_radius, w2, L, parity
-        )
-        u_homogeneous = (
-            (r1 / r1_boundary)[:, np.newaxis] ** (L + 1)
-        ) * boundary[np.newaxis, :]
+        boundary = _outer_boundary_u(r1_boundary, source_radius, w2, L, parity)
+        u_homogeneous = ((r1 / r1_boundary)[:, np.newaxis] ** (L + 1)) * boundary[
+            np.newaxis, :
+        ]
 
         u_L[L] = u_inhomogeneous + u_homogeneous
 

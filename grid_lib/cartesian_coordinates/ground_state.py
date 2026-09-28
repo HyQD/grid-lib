@@ -39,9 +39,7 @@ def scf_diagonalization(
         V_dir = np.einsum(
             "bb, ab, ag->ag", D, w12, I, optimize=True
         )  # V_dir is ends up as a diagonal matrix
-        V_ex = np.einsum(
-            "dg, gd->gd", D, w12, optimize=True
-        )  # V_ex is a dense matrix
+        V_ex = np.einsum("dg, gd->gd", D, w12, optimize=True)  # V_ex is a dense matrix
         F = H + 2 * V_dir - V_ex
 
         eps, C = np.linalg.eigh(F)
@@ -50,8 +48,6 @@ def scf_diagonalization(
         grad_norm = np.linalg.norm(np.dot(F, D) - np.dot(D, F))
         iters += 1
         if verbose:
-            print(
-                f"ERHF: {e_rhf:.8f}, Iters: {iters}, ||FD-DF||: {grad_norm:.2e}"
-            )
+            print(f"ERHF: {e_rhf:.8f}, Iters: {iters}, ||FD-DF||: {grad_norm:.2e}")
 
     return eps[occ], e_rhf, C[:, occ]

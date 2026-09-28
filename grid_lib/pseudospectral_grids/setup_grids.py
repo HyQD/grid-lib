@@ -136,9 +136,7 @@ def _setup_gll(params: Dict[str, Any]) -> GaussLegendreLobatto:
 def _setup_femdvr(params: Dict[str, Any]) -> FEMDVR:
     """Create a FEM-DVR grid."""
     if "nodes" not in params or "n_points" not in params:
-        raise ValueError(
-            "'nodes' and 'n_points' are required for 'femdvr' grid"
-        )
+        raise ValueError("'nodes' and 'n_points' are required for 'femdvr' grid")
 
     nodes = params["nodes"]
     n_points = params["n_points"]
@@ -146,9 +144,7 @@ def _setup_femdvr(params: Dict[str, Any]) -> FEMDVR:
     element_class = params.get("element_class", GaussLegendreLobatto)
     symmetrize = params.get("symmetrize", False)
 
-    return FEMDVR(
-        nodes, n_points, Mapping, element_class, symmetrize=symmetrize
-    )
+    return FEMDVR(nodes, n_points, Mapping, element_class, symmetrize=symmetrize)
 
 
 def setup_femdvr_uniform(

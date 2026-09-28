@@ -7,7 +7,6 @@ from grid_lib.pseudospectral_grids.gauss_legendre_lobatto import (
 
 
 def test_integrate_polynomials():
-
     """
     Gauss-Lobatto quadrature is accurate for polynomials up to order 2n-1,
     where n is the number of grid/integration points. We have chosen the convention that
@@ -28,9 +27,7 @@ def test_integrate_polynomials():
     # Test the integral of even polynomials up to order 2N-1 on the interval [-1, 1]
     for n in range(2, 2 * N - 1, 2):
         integral_xn = np.dot(w, x**n)
-        np.testing.assert_allclose(
-            integral_xn, 2 / (n + 1), rtol=0.0, atol=1e-15
-        )
+        np.testing.assert_allclose(integral_xn, 2 / (n + 1), rtol=0.0, atol=1e-15)
 
 
 def test_integrate_polynomials_mapped_interval():
@@ -74,9 +71,7 @@ def test_integrate_xk_exp_minus_a_x2():
         x_min = 0
         x_max = np.sqrt(37 / a) + 10
 
-        GLL = GaussLegendreLobatto(
-            N, Linear_map(x_min, x_max), symmetrize=False
-        )
+        GLL = GaussLegendreLobatto(N, Linear_map(x_min, x_max), symmetrize=False)
 
         x = GLL.r
         x_dot = GLL.r_dot

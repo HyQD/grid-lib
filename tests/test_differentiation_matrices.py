@@ -52,9 +52,7 @@ def test_D2_LegendreDirichlet():
 
     for symm in symmetrize:
 
-        GLL = GaussLegendreLobatto(
-            N, Linear_map(x_min, x_max), symmetrize=symmetrize
-        )
+        GLL = GaussLegendreLobatto(N, Linear_map(x_min, x_max), symmetrize=symmetrize)
 
         D2 = np.zeros((N + 1, N + 1))
         for i in range(1, N):
@@ -70,9 +68,7 @@ def test_D2_LegendreDirichlet():
                     )
                 else:
                     D2[i, j] = (
-                        -2
-                        / (GLL.x[i] - GLL.x[j]) ** 2
-                        / (GLL.r_dot[i] * GLL.r_dot[j])
+                        -2 / (GLL.x[i] - GLL.x[j]) ** 2 / (GLL.r_dot[i] * GLL.r_dot[j])
                     )
                     if not symmetrize:
                         D2[i, j] *= GLL.PN_x2[i] / GLL.PN_x2[j]

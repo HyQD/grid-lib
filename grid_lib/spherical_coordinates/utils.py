@@ -45,9 +45,7 @@ def mask_function(r, r_max, r0, n=4):
 
     mask_r[ind1] = 1
     mask_r[ind2] = 0
-    mask_r[ind3] = np.cos(np.pi * (r[ind3] - r0) / (2 * (r_max - r0))) ** (
-        1 / n
-    )
+    mask_r[ind3] = np.cos(np.pi * (r[ind3] - r0) / (2 * (r_max - r0))) ** (1 / n)
 
     return mask_r
 
@@ -111,11 +109,11 @@ def cartesian_to_spherical(a):
     """
     a = np.asarray(a, dtype=float)
     if a.shape != (3,):
-        raise ValueError('Expected a 3D vector with shape (3,)')
+        raise ValueError("Expected a 3D vector with shape (3,)")
 
     r = np.linalg.norm(a)
     if r == 0:
-        raise ValueError('Spherical angles are undefined for the zero vector')
+        raise ValueError("Spherical angles are undefined for the zero vector")
 
     theta = np.arccos(a[2] / r)
     phi = np.mod(np.arctan2(a[1], a[0]), 2 * np.pi)

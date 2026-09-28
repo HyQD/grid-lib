@@ -68,8 +68,7 @@ class Grid1D:
         if missing:
             missing_keys = ", ".join(sorted(missing))
             raise ValueError(
-                "femdvr_uniform grid_params missing required keys: "
-                f"{missing_keys}."
+                "femdvr_uniform grid_params missing required keys: " f"{missing_keys}."
             )
 
         params.setdefault("symmetrize", False)

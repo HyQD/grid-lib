@@ -51,7 +51,6 @@ from grid_lib.spherical_coordinates.ground_state import (
     compute_ground_state_diatomic,
 )
 
-
 ### INPUTS #######################
 
 # pulse inputs
@@ -128,9 +127,7 @@ eps, phi_n = compute_ground_state_diatomic(
     angular_matrix_elements_Coulomb, radial_matrix_elements, potential, l_max
 )
 # setup initial state
-psi_t_temp = phi_n[:, 0] / np.sqrt(
-    quadrature(weights, np.abs(phi_n[:, 0]) ** 2)
-)
+psi_t_temp = phi_n[:, 0] / np.sqrt(quadrature(weights, np.abs(phi_n[:, 0]) ** 2))
 psi_t = np.zeros((n_lm, nr), dtype=np.complex128)
 for l in range(l_max + 1):
     I = angular_matrix_elements_lmr.I_lm_[f"{l}{0}"]
@@ -140,19 +137,11 @@ for l in range(l_max + 1):
 t_cycle = 2 * np.pi / omega
 tfinal = ncycles * t_cycle
 
-a_field_z_p = square_velocity_exp_p(
-    field_strength=E0, omega=omega, ncycles=ncycles
-)
-a_field_z_m = square_velocity_exp_m(
-    field_strength=E0, omega=omega, ncycles=ncycles
-)
+a_field_z_p = square_velocity_exp_p(field_strength=E0, omega=omega, ncycles=ncycles)
+a_field_z_m = square_velocity_exp_m(field_strength=E0, omega=omega, ncycles=ncycles)
 
-a_field2_z_p = square_velocity_exp2_p(
-    field_strength=E0, omega=omega, ncycles=ncycles
-)
-a_field2_z_m = square_velocity_exp2_m(
-    field_strength=E0, omega=omega, ncycles=ncycles
-)
+a_field2_z_p = square_velocity_exp2_p(field_strength=E0, omega=omega, ncycles=ncycles)
+a_field2_z_m = square_velocity_exp2_m(field_strength=E0, omega=omega, ncycles=ncycles)
 
 
 # # sampling arrays

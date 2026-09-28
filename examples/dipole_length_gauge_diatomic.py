@@ -72,9 +72,7 @@ D1 = radial_matrix_elements.D1
 T_D2 = -(1 / 2) * radial_matrix_elements.D2
 
 # setup angular matrix elements
-angular_matrix_elements = AngularMatrixElements_l(
-    arr_to_calc=["z_Omega"], l_max=l_max
-)
+angular_matrix_elements = AngularMatrixElements_l(arr_to_calc=["z_Omega"], l_max=l_max)
 
 angular_matrix_elements_Coulomb = AngularMatrixElements_lr_Coulomb(
     arr_to_calc=["1/(r-a)"],
@@ -132,9 +130,7 @@ H0_psi = H0Psi(
     potential,
 )
 
-Vt_psi = V_psi_length_z(
-    angular_matrix_elements, radial_matrix_elements, e_field_z
-)
+Vt_psi = V_psi_length_z(angular_matrix_elements, radial_matrix_elements, e_field_z)
 
 V_Coulomb = V_Coulomb(angular_matrix_elements_Coulomb, radial_matrix_elements)
 

@@ -72,9 +72,7 @@ def test_radial_poisson():
     u_1s = r * np.exp(-r)
     norm_1s = np.dot(w_r, u_1s**2)
     u_1s /= np.sqrt(norm_1s)
-    tilde_V0_1s = np.einsum(
-        "b, ab, b->a", u_1s, tilde_V0_dvr[0], u_1s, optimize=True
-    )
+    tilde_V0_1s = np.einsum("b, ab, b->a", u_1s, tilde_V0_dvr[0], u_1s, optimize=True)
 
     tilde_V0_exact_1s = 1 - (r + 1) * np.exp(
         -2 * r
@@ -217,8 +215,7 @@ def test_two_grid_scaled_nodes_match_discrete_same_grid_reference():
 
     weight_scale = w2 / w1[source_indices]
     W_discrete_reference = (
-        W_reference_grid[:, :, source_indices]
-        * weight_scale[np.newaxis, np.newaxis, :]
+        W_reference_grid[:, :, source_indices] * weight_scale[np.newaxis, np.newaxis, :]
     )
     np.testing.assert_allclose(W, W_discrete_reference, atol=1e-12, rtol=1e-12)
 
@@ -239,18 +236,14 @@ def test_two_grid_scaled_nodes_are_close_to_analytic_kernel():
 
     for L in range(4):
         r_less = np.minimum(r1[:, np.newaxis], source_radius[np.newaxis, :])
-        r_greater = np.maximum(
-            r1[:, np.newaxis], source_radius[np.newaxis, :]
-        )
+        r_greater = np.maximum(r1[:, np.newaxis], source_radius[np.newaxis, :])
         W_exact = (
             (4 * np.pi / (2 * L + 1))
             * r_less**L
             / r_greater ** (L + 1)
             * w2[np.newaxis, :]
         )
-        relative_error = np.max(np.abs(W[L] - W_exact)) / np.max(
-            np.abs(W_exact)
-        )
+        relative_error = np.max(np.abs(W[L] - W_exact)) / np.max(np.abs(W_exact))
         assert relative_error < 0.70
 
 
@@ -258,9 +251,7 @@ def test_two_grid_gamma_zero_is_monopole_only():
     r1_grid = _femdvr(r_max=10.0, n_elem=2, points_per_elem=11)
     r2_grid = _femdvr(r_max=4.0, n_elem=2, points_per_elem=11)
 
-    u_L = solve_radial_Poisson_femdvr_two_grid(
-        r1_grid, r2_grid, n_L=4, gamma=0.0
-    )
+    u_L = solve_radial_Poisson_femdvr_two_grid(r1_grid, r2_grid, n_L=4, gamma=0.0)
     W = radial_Coulomb_femdvr_two_grid(
         r1_grid, r2_grid, n_L=4, charge_gamma_terms=[(2.0, -3.0, 0.0)]
     )
@@ -268,9 +259,7 @@ def test_two_grid_gamma_zero_is_monopole_only():
     r1 = r1_grid.r[1:-1]
     w2 = r2_grid.weights[1:-1]
 
-    np.testing.assert_allclose(
-        u_L[0], np.repeat(w2[np.newaxis, :], len(r1), axis=0)
-    )
+    np.testing.assert_allclose(u_L[0], np.repeat(w2[np.newaxis, :], len(r1), axis=0))
     np.testing.assert_allclose(u_L[1:], 0.0)
 
     W0_exact = -6.0 * 4 * np.pi * w2[np.newaxis, :] / r1[:, np.newaxis]

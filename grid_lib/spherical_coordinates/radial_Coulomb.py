@@ -22,10 +22,7 @@ def _as_gamma_charge_terms(gamma_charge_terms):
     terms = list(gamma_charge_terms)
     for term in terms:
         if len(term) != 3:
-            raise ValueError(
-                "Each Coulomb term must be a tuple/list "
-                "(gamma,q1,q2)."
-            )
+            raise ValueError("Each Coulomb term must be a tuple/list " "(gamma,q1,q2).")
     return terms
 
 
@@ -65,16 +62,9 @@ def radial_Coulomb_femdvr_two_grid(r1_grid, r2_grid, n_L, gamma_charge_terms):
     W = np.zeros((n_L, n_r1, n_r2))
 
     for gamma, q1, q2 in _as_gamma_charge_terms(gamma_charge_terms):
-        u_L = solve_radial_Poisson_femdvr_two_grid(
-            r1_grid, r2_grid, n_L, gamma
-        )
+        u_L = solve_radial_Poisson_femdvr_two_grid(r1_grid, r2_grid, n_L, gamma)
         prefactor = q1 * q2
         for L in range(n_L):
-            W[L] += (
-                prefactor
-                * (4 * np.pi / (2 * L + 1))
-                * u_L[L]
-                / r1[:, np.newaxis]
-            )
+            W[L] += prefactor * (4 * np.pi / (2 * L + 1)) * u_L[L] / r1[:, np.newaxis]
 
     return W

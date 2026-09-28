@@ -18,8 +18,8 @@ def compute_numerical_states(l_max, n_max, r):
     n_grid = len(r)
 
     for l in range(l_max):
-        h_diag = 1.0 / (dr ** 2) + l * (l + 1) / (2 * r ** 2) - 1 / r
-        h_off_diag = -1.0 / (2 * dr ** 2) * np.ones(n_grid - 1)
+        h_diag = 1.0 / (dr**2) + l * (l + 1) / (2 * r**2) - 1 / r
+        h_off_diag = -1.0 / (2 * dr**2) * np.ones(n_grid - 1)
         H = np.diag(h_diag) + np.diag(h_off_diag, k=-1) + np.diag(h_off_diag, k=1)
         eps_l, u_l = np.linalg.eigh(H)
         eigenstates[l] = u_l[:, :n_max]
@@ -30,9 +30,7 @@ def compute_numerical_states(l_max, n_max, r):
         states = eigenstates[l]
         normalized_states = np.zeros_like(states)
         for i, state in enumerate(states.T):
-            normalized_states[:, i] = state / np.sqrt(
-                simpson(np.abs(state) ** 2, x=r)
-            )
+            normalized_states[:, i] = state / np.sqrt(simpson(np.abs(state) ** 2, x=r))
         eigenstates[l] = normalized_states
 
     return eigenenergies, eigenstates
@@ -45,49 +43,51 @@ def mask_function(r, r0):
     else:
         return np.cos(np.pi * (r - r0) / (2 * (r_max - r0))) ** (1 / 8)
 
+
 def round_up(a):
-    return math.floor(a+0.5)
+    return math.floor(a + 0.5)
+
 
 def round_down(a):
-    return math.ceil(a-0.5)
+    return math.ceil(a - 0.5)
+
 
 class Tridiag:
-    def __init__(self,n=None,diag=None,below=None,above=None):
+    def __init__(self, n=None, diag=None, below=None, above=None):
         if n is not None:
             self.n = n
         else:
             if (diag is not None) and (type(diag) == np.ndarray):
                 self.n = len(diag)
             elif (below is not None) and (type(below) == np.ndarray):
-                self.n = len(below)+1
+                self.n = len(below) + 1
             elif (above is not None) and (type(above) == np.ndarray):
-                self.n = len(above)+1
+                self.n = len(above) + 1
             else:
-                print ('An array length must be given')
+                print("An array length must be given")
                 sys.exit([1])
 
-
         if type(diag) == np.ndarray:
-            assert len(diag) == self.n, 'failed length on diag'
+            assert len(diag) == self.n, "failed length on diag"
             self.diag = diag
         elif diag is not None:
-            self.diag = diag*np.ones(n)
+            self.diag = diag * np.ones(n)
         else:
             self.diag = None
 
         if type(below) == np.ndarray:
-            assert len(below) == self.n-1, 'failed length on below'
+            assert len(below) == self.n - 1, "failed length on below"
             self.below = below
         elif below is not None:
-            self.below = below*np.ones(self.n-1)
+            self.below = below * np.ones(self.n - 1)
         else:
             self.below = None
 
         if type(above) == np.ndarray:
-            assert len(above) == self.n-1, 'failed length on above'
+            assert len(above) == self.n - 1, "failed length on above"
             self.above = above
         elif above is not None:
-            self.above = above*np.ones(self.n-1)
+            self.above = above * np.ones(self.n - 1)
         else:
             self.above = None
 
@@ -112,35 +112,35 @@ class Tridiag:
         else:
             return False
 
-    def set_diag(self,k=0):
+    def set_diag(self, k=0):
         if type(diag) == np.ndarray:
-            assert len(diag) == self.n, 'failed length on diag'
+            assert len(diag) == self.n, "failed length on diag"
             self.diag = diag
         else:
-            self.diag = diag*np.ones(self.n)
+            self.diag = diag * np.ones(self.n)
 
-    def set_below(self,below):
+    def set_below(self, below):
         if type(below) == np.ndarray:
-            assert len(below) == self.n-1, 'failed length on below'
+            assert len(below) == self.n - 1, "failed length on below"
             self.below = below
         else:
-            self.below = below*np.ones(self.n-1)
+            self.below = below * np.ones(self.n - 1)
 
-    def set_above(self,above):
+    def set_above(self, above):
         if type(above) == np.ndarray:
-            assert len(above) == self.n-1, 'failed length on above'
+            assert len(above) == self.n - 1, "failed length on above"
             self.above = above
         else:
-            self.above = above*np.ones(self.n-1)
+            self.above = above * np.ones(self.n - 1)
 
     def todense(self):
         diag = self.diag if self.has_diag else np.zeros(self.n)
-        below = self.below if self.has_below else np.zeros(self.n-1)
-        above = self.above if self.has_above else np.zeros(self.n-1)
-        return np.diag(diag)+np.diag(below,k=-1)+np.diag(above,k=1)
+        below = self.below if self.has_below else np.zeros(self.n - 1)
+        above = self.above if self.has_above else np.zeros(self.n - 1)
+        return np.diag(diag) + np.diag(below, k=-1) + np.diag(above, k=1)
 
-    def dot(self,vec):
-        #returns a vector
+    def dot(self, vec):
+        # returns a vector
         if self.has_diag:
             diag = self.diag
         else:
@@ -149,17 +149,17 @@ class Tridiag:
         if self.has_below:
             below = self.below
         else:
-            below = np.zeros(self.n-1)
+            below = np.zeros(self.n - 1)
 
         if self.has_above:
             above = self.above
         else:
-            above = np.zeros(self.n-1)
+            above = np.zeros(self.n - 1)
 
         return tridiag_prod(diag, above, below, vec)
 
-    def dot_inverse(self,vec):
-        #returns a vector
+    def dot_inverse(self, vec):
+        # returns a vector
         if self.has_diag:
             diag = self.diag
         else:
@@ -168,60 +168,57 @@ class Tridiag:
         if self.has_below:
             below = self.below
         else:
-            below = np.zeros(self.n-1)
+            below = np.zeros(self.n - 1)
 
         if self.has_above:
             above = self.above
         else:
-            above = np.zeros(self.n-1)
+            above = np.zeros(self.n - 1)
 
         return TDMAsolver(below, diag, above, vec, self.n)
 
-    def scale(self,a):
-        ret_diag = a*self.diag if self.has_diag else None
-        ret_below = a*self.below if self.has_below else None
-        ret_above = a*self.above if self.has_above else None
+    def scale(self, a):
+        ret_diag = a * self.diag if self.has_diag else None
+        ret_below = a * self.below if self.has_below else None
+        ret_above = a * self.above if self.has_above else None
 
-        return Tridiag(diag=ret_diag,below=ret_below,above=ret_above)
+        return Tridiag(diag=ret_diag, below=ret_below, above=ret_above)
 
-    def sum(self,a):
-        #a : Tridiag object
-        ret_diag,ret_below,ret_above = None,None,None
+    def sum(self, a):
+        # a : Tridiag object
+        ret_diag, ret_below, ret_above = None, None, None
 
-        if self.has_diag*a.has_diag:
+        if self.has_diag * a.has_diag:
             ret_diag = self.diag + a.diag
         elif self.has_diag:
             ret_diag = self.diag
         elif a.has_diag:
             ret_diag = a.diag
 
-        if self.has_below*a.has_below:
+        if self.has_below * a.has_below:
             ret_below = self.below + a.below
         elif self.has_below:
             ret_below = self.below
         elif a.has_below:
             ret_below = a.below
 
-        if self.has_above*a.has_above:
+        if self.has_above * a.has_above:
             ret_above = self.above + a.above
         elif self.has_above:
             ret_above = self.above
         elif a.has_above:
             ret_above = a.above
 
-        return Tridiag(diag=ret_diag,below=ret_below,above=ret_above)
+        return Tridiag(diag=ret_diag, below=ret_below, above=ret_above)
 
-    def __add__(self,a):
+    def __add__(self, a):
         return self.sum(a)
 
-    def __rmul__(self,a):
+    def __rmul__(self, a):
         return self.scale(a)
 
-    def __sub__(self,a):
-        return self.sum(-1*a)
-
-
-
+    def __sub__(self, a):
+        return self.sum(-1 * a)
 
 
 @jit(nopython=True)
@@ -309,8 +306,8 @@ def setup_Hamiltonian(r_max, dr, l_max):
     # H0 is tridiagnoal in space (index j)
     for l in range(l_max):
 
-        h_diag = 1.0 / (dr ** 2) + l * (l + 1) / (2 * r ** 2) - 1 / r
-        h_off_diag = -1.0 / (2 * dr ** 2) * np.ones(n_grid - 1)
+        h_diag = 1.0 / (dr**2) + l * (l + 1) / (2 * r**2) - 1 / r
+        h_off_diag = -1.0 / (2 * dr**2) * np.ones(n_grid - 1)
 
         i0 = l * n_grid
         i1 = (l + 1) * n_grid
@@ -333,6 +330,7 @@ def setup_Hamiltonian(r_max, dr, l_max):
         Hint[i0:i1, i0:i1] = np.diag(lower, k=-1) + np.diag(upper, k=1)
 
     return H0, Hint
+
 
 def compute_hhg_spectrum(time_points, dipole_moment, hann_window=True):
 

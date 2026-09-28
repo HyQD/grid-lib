@@ -13,7 +13,6 @@ from lasers_AE import sine_square_A_velocity, sine_square_A_length
 
 import time
 
-
 ### inputs grid/stationary states ##
 dr = 0.1
 dz = 0.1
@@ -70,11 +69,9 @@ n = Nr * Nz
 print("mat dim:", n)
 
 a = 0.5
-h_diag_rz = a * 2 * np.ones(n) * (1 / delta_r ** 2 + 1 / delta_z ** 2) + V_grid.flatten(
-    "F"
-)
-h_off_rz = -a * (np.ones(n - 1) / (delta_r ** 2))
-h_off_off_rz = -a * np.ones(n - Nr) / (delta_z ** 2)
+h_diag_rz = a * 2 * np.ones(n) * (1 / delta_r**2 + 1 / delta_z**2) + V_grid.flatten("F")
+h_off_rz = -a * (np.ones(n - 1) / (delta_r**2))
+h_off_off_rz = -a * np.ones(n - Nr) / (delta_z**2)
 
 
 ii = 1
@@ -118,9 +115,9 @@ print("nt:", nt)
 
 # matrices for the time propagation
 h_diag_zr = (
-    a * 2 * np.ones(n) * (1 / delta_r ** 2 + 1 / delta_z ** 2)
+    a * 2 * np.ones(n) * (1 / delta_r**2 + 1 / delta_z**2)
 )  # + V_grid.flatten("C")
-h_off_zr = -a * (np.ones(n - 1) / (delta_z ** 2))
+h_off_zr = -a * (np.ones(n - 1) / (delta_z**2))
 
 for i in range(1, n - 1):
     if i % Nz == 0:
@@ -131,8 +128,10 @@ h_mat_r_rz = Tridiag(diag=h_diag_rz, below=h_off_rz, above=h_off_rz)
 h_mat_z_zr = Tridiag(diag=h_diag_zr, below=h_off_zr, above=h_off_zr)
 
 state = (phi[:, 0]).astype(np.complex128).reshape(Nz, Nr).T
-state = state * 1 / np.sqrt(
-    trapezoid(trapezoid(state.conj() * state, dx=delta_z), dx=delta_r)
+state = (
+    state
+    * 1
+    / np.sqrt(trapezoid(trapezoid(state.conj() * state, dx=delta_z), dx=delta_r))
 )
 
 
@@ -200,5 +199,6 @@ samples["dipole_moment"] = dipmom
 samples["norm"] = norm
 samples["laser_pulse"] = pulse(time_points)
 np.savez(
-    f"dt{dt}_dr{dr}_dz{dz}_Lr{Lr}_Lz{Lz}_par{zgrid_parity}_{gauge}.npz", **samples
+    f"dt{dt}_dr{dr}_dz{dz}_Lr{Lr}_Lz{Lz}_par{zgrid_parity}_{gauge}.npz",
+    **samples,
 )

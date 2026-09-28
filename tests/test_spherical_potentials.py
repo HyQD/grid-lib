@@ -60,9 +60,7 @@ def test_clamped_molecular_potential_quadrature_for_displaced_nucleus_on_z_axis(
                 )
                 np.testing.assert_allclose(V_LM[I_LM], expected)
             else:
-                np.testing.assert_allclose(
-                    V_LM[I_LM], 0.0, atol=1e-14, rtol=0.0
-                )
+                np.testing.assert_allclose(V_LM[I_LM], 0.0, atol=1e-14, rtol=0.0)
 
 
 def test_clamped_molecular_potential_poisson_assembles_components_from_W():
@@ -116,9 +114,7 @@ def test_clamped_molecular_potential_poisson_warns_and_uses_nearest_grid_point()
     nearest_idx = np.argmin(np.abs(r - a))
     snapped_position = np.array([0.0, 0.0, r[nearest_idx]])
 
-    with pytest.warns(
-        UserWarning, match="not a grid point; nearest grid point"
-    ):
+    with pytest.warns(UserWarning, match="not a grid point; nearest grid point"):
         V_poisson = clamped_molecular_potential_Poisson(
             r,
             W,

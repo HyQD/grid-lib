@@ -49,7 +49,6 @@ from grid_lib.spherical_coordinates.properties import expec_x_i, expec_p_i
 
 from grid_lib.spherical_coordinates.ground_state import compute_ground_state
 
-
 ### INPUTS #######################
 
 # pulse inputs
@@ -122,19 +121,11 @@ psi0 = psi_t[0].copy()
 t_cycle = 2 * np.pi / omega
 tfinal = ncycles * t_cycle
 
-a_field_z_p = square_velocity_exp_p(
-    field_strength=E0, omega=omega, ncycles=ncycles
-)
-a_field_z_m = square_velocity_exp_m(
-    field_strength=E0, omega=omega, ncycles=ncycles
-)
+a_field_z_p = square_velocity_exp_p(field_strength=E0, omega=omega, ncycles=ncycles)
+a_field_z_m = square_velocity_exp_m(field_strength=E0, omega=omega, ncycles=ncycles)
 
-a_field2_z_p = square_velocity_exp2_p(
-    field_strength=E0, omega=omega, ncycles=ncycles
-)
-a_field2_z_m = square_velocity_exp2_m(
-    field_strength=E0, omega=omega, ncycles=ncycles
-)
+a_field2_z_p = square_velocity_exp2_p(field_strength=E0, omega=omega, ncycles=ncycles)
+a_field2_z_m = square_velocity_exp2_m(field_strength=E0, omega=omega, ncycles=ncycles)
 
 
 # # sampling arrays

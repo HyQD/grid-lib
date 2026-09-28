@@ -93,10 +93,7 @@ class SineDVR:
         mask = (n1 + n2) % 2 == 1
 
         D1_fbr[mask] = (
-            4.0
-            * n1[mask]
-            * n2[mask]
-            / (self.L * (n1[mask] ** 2 - n2[mask] ** 2))
+            4.0 * n1[mask] * n2[mask] / (self.L * (n1[mask] ** 2 - n2[mask] ** 2))
         )
 
         self.D1 = U @ D1_fbr @ U.T
@@ -104,10 +101,6 @@ class SineDVR:
         # ------------------------------------------------------
         # Consistency checks
         # ------------------------------------------------------
-        assert np.allclose(
-            self.D1, -self.D1.T, atol=1e-12
-        ), "D1 is not antisymmetric"
+        assert np.allclose(self.D1, -self.D1.T, atol=1e-12), "D1 is not antisymmetric"
 
-        assert np.allclose(
-            self.D2, self.D2.T, atol=1e-12
-        ), "D2 is not symmetric"
+        assert np.allclose(self.D2, self.D2.T, atol=1e-12), "D2 is not symmetric"

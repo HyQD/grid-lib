@@ -352,16 +352,12 @@ def _gaunt_py3nj(l1, l2, l3, m1, m2, m3):
 
     try:
         w000 = _scalarize(wigner3j(2 * l1, 2 * l2, 2 * l3, 0, 0, 0))
-        wmmm = _scalarize(
-            wigner3j(2 * l1, 2 * l2, 2 * l3, 2 * m1, 2 * m2, 2 * m3)
-        )
+        wmmm = _scalarize(wigner3j(2 * l1, 2 * l2, 2 * l3, 2 * m1, 2 * m2, 2 * m3))
     except Exception:
         w000 = _scalarize(wigner3j(l1, l2, l3, 0, 0, 0))
         wmmm = _scalarize(wigner3j(l1, l2, l3, m1, m2, m3))
 
-    prefactor = np.sqrt(
-        (2 * l1 + 1) * (2 * l2 + 1) * (2 * l3 + 1) / (4 * np.pi)
-    )
+    prefactor = np.sqrt((2 * l1 + 1) * (2 * l2 + 1) * (2 * l3 + 1) / (4 * np.pi))
     return prefactor * w000 * wmmm
 
 
@@ -387,9 +383,7 @@ def _build_lm_state_tables(l_max, m_max):
     state_table = {}
     for m in range(-m_max, m_max + 1):
         l_values = np.arange(abs(m), l_max + 1, dtype=int)
-        indices = np.array(
-            [LM_to_I(l, m, l_max, m_max) for l in l_values], dtype=int
-        )
+        indices = np.array([LM_to_I(l, m, l_max, m_max) for l in l_values], dtype=int)
         state_table[m] = (l_values, indices)
     return state_table
 
@@ -411,7 +405,9 @@ def get_y_value(L, M, l1, m1, l2, m2):
         return 0.0
 
     sign = -1.0 if (m1 % 2) else 1.0
-    return sign * _gaunt_fast_cached(int(l1), int(L), int(l2), -int(m1), int(M), int(m2))
+    return sign * _gaunt_fast_cached(
+        int(l1), int(L), int(l2), -int(m1), int(M), int(m2)
+    )
 
 
 def get_ybar_value(L, M, l1, m1, l2, m2):
@@ -431,7 +427,9 @@ def get_ybar_value(L, M, l1, m1, l2, m2):
         return 0.0
 
     sign = -1.0 if ((m1 + M) % 2) else 1.0
-    return sign * _gaunt_fast_cached(int(l1), int(L), int(l2), -int(m1), -int(M), int(m2))
+    return sign * _gaunt_fast_cached(
+        int(l1), int(L), int(l2), -int(m1), -int(M), int(m2)
+    )
 
 
 def get_y(l_max, m_max, L_max, M_max):

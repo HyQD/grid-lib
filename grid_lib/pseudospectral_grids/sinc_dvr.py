@@ -26,9 +26,8 @@ class SincDVR:
                 if i == j:
                     self.D2[i, j] = -np.pi**2 / (3 * self.dx**2)
                 else:
-                    self.D2[i, j] = (
-                        -2 * (-1) ** (i - j) / (self.dx**2 * (i - j) ** 2)
-                    )
+                    self.D2[i, j] = -2 * (-1) ** (i - j) / (self.dx**2 * (i - j) ** 2)
+
 
 class RadialSincDVR(PseudospectralGrid):
     """Radial sinc DVR for reduced wavefunctions on ``0 < r <= r_max``."""
@@ -68,23 +67,16 @@ class RadialSincDVR(PseudospectralGrid):
         # ----------------------------------------------------------
 
         # image contribution: -D1(i,-j)
-        self.D1 = (
-            -(-1.0)**(I + J)
-            / (self.dr * (I + J))
-        )
+        self.D1 = -((-1.0) ** (I + J)) / (self.dr * (I + J))
 
         # ordinary D1(i,j), i != j
         mask = I != J
 
-        self.D1[mask] += (
-            (-1.0)**(I[mask] - J[mask])
-            / (self.dr * (I[mask] - J[mask]))
-        )
+        self.D1[mask] += (-1.0) ** (I[mask] - J[mask]) / (self.dr * (I[mask] - J[mask]))
 
         # Diagonal is automatically
         #
         # D1_rad(i,i) = -1/(2*i*dr)
-
 
         # ----------------------------------------------------------
         # Second derivative
@@ -93,25 +85,17 @@ class RadialSincDVR(PseudospectralGrid):
         # ----------------------------------------------------------
 
         # image contribution: -D2(i,-j)
-        self.D2 = (
-            2.0 * (-1.0)**(I + J)
-            / (self.dr**2 * (I + J)**2)
-        )
+        self.D2 = 2.0 * (-1.0) ** (I + J) / (self.dr**2 * (I + J) ** 2)
 
         # ordinary off-diagonal D2(i,j)
         self.D2[mask] += (
-            -2.0 * (-1.0)**(I[mask] - J[mask])
-            / (
-                self.dr**2
-                * (I[mask] - J[mask])**2
-            )
+            -2.0
+            * (-1.0) ** (I[mask] - J[mask])
+            / (self.dr**2 * (I[mask] - J[mask]) ** 2)
         )
 
         # exact diagonal
         np.fill_diagonal(
             self.D2,
-            -np.pi**2 / (3.0 * self.dr**2)
-            + 1.0 / (
-                2.0 * self.dr**2 * j**2
-            )
+            -np.pi**2 / (3.0 * self.dr**2) + 1.0 / (2.0 * self.dr**2 * j**2),
         )

@@ -30,9 +30,7 @@ Gaussian_charge_distribution_hydrogen = Gaussian_charge_distribution(mu=100)
 
 V_Hydrogen = np.diag(Hydrogen_potential(r))
 V_SAE_He = np.diag(SAE_He_potential(r))
-V_Gaussian_charge_distribution = np.diag(
-    Gaussian_charge_distribution_hydrogen(r)
-)
+V_Gaussian_charge_distribution = np.diag(Gaussian_charge_distribution_hydrogen(r))
 
 print()
 for l in range(0, 3):

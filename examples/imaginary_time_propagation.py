@@ -24,7 +24,6 @@ import tqdm
 from opt_einsum import contract
 from scipy.sparse.linalg import LinearOperator, eigsh, eigs, cg, gmres, bicgstab
 
-
 N = 100
 r_max = 20
 gll = GaussLegendreLobatto(N, Linear_map(r_max=r_max))
@@ -61,9 +60,7 @@ for m in m_list:
     H0 = T_D2 + np.diag(potential) + np.diag(l * (l + 1) / (2 * r**2))
     eps, psi = np.linalg.eigh(H0)
 
-    H0_psi = H0_B_Psi(
-        angular_matrix_elements, radial_matrix_elements, potential, B0=B
-    )
+    H0_psi = H0_B_Psi(angular_matrix_elements, radial_matrix_elements, potential, B0=B)
     rhs = HtPsi(angular_matrix_elements, radial_matrix_elements, H0_psi, [])
 
     psi_t = np.zeros((l_max + 1, nr), dtype=np.complex128)
@@ -76,9 +73,7 @@ for m in m_list:
     for l in range(l_max + 1):
         expec_H[0] += quadrature(weights, psi_t[l] * H_psi_t[l])
 
-    preconditioner = M2Psi(
-        angular_matrix_elements, radial_matrix_elements, -1j * dt
-    )
+    preconditioner = M2Psi(angular_matrix_elements, radial_matrix_elements, -1j * dt)
     M_linear = LinearOperator((nr * (n_lm), nr * (n_lm)), matvec=preconditioner)
 
     for i in tqdm.tqdm(range(num_steps - 1)):

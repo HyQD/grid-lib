@@ -43,12 +43,8 @@ class AngularMomentumOperators:
                             self.lz[i1, i2] = m1
                             self.lz_sq[i1, i2] = m1**2
                             self.l_sq[i1, i2] = l1 * (l1 + 1)
-                            self.lm_lp[i1, i2] = Aminus(l2, m2 + 1) * Aplus(
-                                l2, m2
-                            )
-                            self.lp_lm[i1, i2] = Aplus(l2, m2 - 1) * Aminus(
-                                l2, m2
-                            )
+                            self.lm_lp[i1, i2] = Aminus(l2, m2 + 1) * Aplus(l2, m2)
+                            self.lp_lm[i1, i2] = Aplus(l2, m2 - 1) * Aminus(l2, m2)
 
         self.lx = (1.0 / 2.0) * (self.lp + self.lm)
         self.ly = (1.0 / 2.0j) * (self.lp - self.lm)
@@ -62,35 +58,27 @@ class OrbitalAngularMomentum:
 
     def lx(self, A):
         return contract("IJ, paJ -> paI", self.ame.lx, A)
-    
+
     def ly(self, A):
         return contract("IJ, paJ -> paI", self.ame.ly, A)
-    
+
     def lz(self, A):
         return contract("IJ, paJ -> paI", self.ame.lz, A)
 
     def p_lsq_q(self, A):
-        l_sq = contract(
-            "k,pkI, qkJ, IJ->pq", self.weights, A.conj(), A, self.ame.l_sq
-        )
+        l_sq = contract("k,pkI, qkJ, IJ->pq", self.weights, A.conj(), A, self.ame.l_sq)
         return l_sq
 
     def p_lx_q(self, A):
-        l_x = contract(
-            "k,pkI, qkJ, IJ->pq", self.weights, A.conj(), A, self.ame.lx
-        )
+        l_x = contract("k,pkI, qkJ, IJ->pq", self.weights, A.conj(), A, self.ame.lx)
         return l_x
 
     def p_ly_q(self, A):
-        l_y = contract(
-            "k,pkI, qkJ, IJ->pq", self.weights, A.conj(), A, self.ame.ly
-        )
+        l_y = contract("k,pkI, qkJ, IJ->pq", self.weights, A.conj(), A, self.ame.ly)
         return l_y
 
     def p_lz_q(self, A):
-        l_z = contract(
-            "k,pkI, qkJ, IJ->pq", self.weights, A.conj(), A, self.ame.lz
-        )
+        l_z = contract("k,pkI, qkJ, IJ->pq", self.weights, A.conj(), A, self.ame.lz)
         return l_z
 
     def compute_l_vector(self, A):
@@ -98,6 +86,3 @@ class OrbitalAngularMomentum:
         ly_e = self.p_ly_q(A)
         lz_e = self.p_lz_q(A)
         return np.array([lx_e, ly_e, lz_e])
-
-
-

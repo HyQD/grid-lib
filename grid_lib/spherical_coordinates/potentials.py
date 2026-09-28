@@ -55,11 +55,7 @@ class SAE:
         return (
             -1
             / r
-            * (
-                1
-                + self.A * np.exp(-r)
-                + (self.Z - 1 - self.A) * np.exp(-self.B * r)
-            )
+            * (1 + self.A * np.exp(-r) + (self.Z - 1 - self.A) * np.exp(-self.B * r))
         )
 
 
@@ -98,14 +94,10 @@ class Erfgau:
         c = 0.923 + 1.568 * self.mu
         alpha = 0.2411 + 1.405 * self.mu
         long_range = erf(self.mu * self.Z * r) / (self.Z * r)
-        return -self.Z**2 * (
-            c * np.exp(-(alpha**2) * self.Z**2 * r**2) + long_range
-        )
+        return -self.Z**2 * (c * np.exp(-(alpha**2) * self.Z**2 * r**2) + long_range)
 
 
-def clamped_molecular_potential_quadrature(
-    r, positions, charges, L_max, M_max=None
-):
+def clamped_molecular_potential_quadrature(r, positions, charges, L_max, M_max=None):
     r"""
     Compute the spherical-harmonic radial coefficients of a clamped
     molecular point-charge potential from the analytic multipole kernel.
@@ -182,10 +174,7 @@ def clamped_molecular_potential_quadrature(
                 angular_factor = Ylm(L, M, theta_R, phi_R)
                 radial_factor = (r_min**L) / (r_max ** (L + 1))
                 V_LM[I_LM] += (
-                    -charge
-                    * (4 * np.pi / (2 * L + 1))
-                    * angular_factor
-                    * radial_factor
+                    -charge * (4 * np.pi / (2 * L + 1)) * angular_factor * radial_factor
                 )
 
     if np.allclose(V_LM.imag, 0.0):
@@ -478,9 +467,7 @@ def plane_wave_spherical_wave_expansion(r, k, L_max, M_max=None, sign=1):
     return f_LM
 
 
-def quadratic_potential_spherical_wave_expansion(
-    r, r0, omega, L_max, M_max=None
-):
+def quadratic_potential_spherical_wave_expansion(r, r0, omega, L_max, M_max=None):
     r"""
     Compute the spherical-harmonic radial coefficients of a quadratic
     potential centered at :math:`\mathbf{r}_0`.
@@ -558,7 +545,7 @@ def quadratic_potential_spherical_wave_expansion(
         for M in range(max(-1, -M_max), min(1, M_max) + 1):
             I_1M = LM_to_I(1, M, L_max, M_max)
             angular = np.conj(Ylm(1, M, theta_0, phi_0))
-            V_LM[I_1M] = -omega**2 * r * R0 * (4 * np.pi / 3) * angular
+            V_LM[I_1M] = -(omega**2) * r * R0 * (4 * np.pi / 3) * angular
 
     if np.allclose(V_LM.imag, 0.0):
         return V_LM.real

@@ -50,9 +50,7 @@ def Rnl_HO(r, n, l, alpha=0.5):
 
 def Rnl_GTO(r, n, l, alpha=1.0):
     norm_constant = 2 * (2 * alpha) ** (0.75) / np.pi ** (0.25)
-    norm_constant *= np.sqrt(
-        2 ** (2 * n - l - 2) / factorial2(4 * n - 2 * l - 3)
-    )
+    norm_constant *= np.sqrt(2 ** (2 * n - l - 2) / factorial2(4 * n - 2 * l - 3))
     radial_part = (np.sqrt(2 * alpha) * r) ** (2 * n - l - 2)
     radial_part *= np.exp(-alpha * r**2)
     return norm_constant * radial_part

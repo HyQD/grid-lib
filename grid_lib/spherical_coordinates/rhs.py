@@ -38,9 +38,7 @@ class H0Psi:
 
 
 class H0_B_Psi(H0Psi):
-    def __init__(
-        self, angular_matrix_elements, radial_matrix_elements, potential, B0
-    ):
+    def __init__(self, angular_matrix_elements, radial_matrix_elements, potential, B0):
         super().__init__(
             angular_matrix_elements,
             radial_matrix_elements,
@@ -53,9 +51,7 @@ class H0_B_Psi(H0Psi):
     def __call__(self, psi, t, ravel=True):
         psi_new = super().__call__(psi, t, ravel=False)
         tmp_B = contract("IJ, Jk->Ik", self.H_Bz_Omega, psi)
-        psi_new += contract(
-            "Ik, k->Ik", tmp_B, (self.B0**2 / 8) * self.r**2
-        )
+        psi_new += contract("Ik, k->Ik", tmp_B, (self.B0**2 / 8) * self.r**2)
         for I in range(self.n_lm):
             l, m = self.lm_I[I]
             psi_new[I] += self.B0 * m / 2 * psi[I]
@@ -67,9 +63,7 @@ class H0_B_Psi(H0Psi):
 
 
 class VPsi:
-    def __init__(
-        self, angular_matrix_elements, radial_matrix_elements, **kwargs
-    ):
+    def __init__(self, angular_matrix_elements, radial_matrix_elements, **kwargs):
         self.angular_matrix_elements = angular_matrix_elements
         self.radial_matrix_elements = radial_matrix_elements
         self.__dict__.update(kwargs)

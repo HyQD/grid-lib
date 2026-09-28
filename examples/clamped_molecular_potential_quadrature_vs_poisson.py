@@ -13,7 +13,6 @@ from grid_lib.spherical_coordinates.potentials import (
 )
 from grid_lib.spherical_coordinates.radial_Coulomb import radial_Coulomb
 
-
 l_max = 1
 m_max = 0
 L_max = 2 * l_max
@@ -65,18 +64,18 @@ for L in range(L_max + 1):
     ax = axes[L]
     I_L0 = LM_to_I(L, 0, L_max, M_max)
 
-    ax.plot(r, V_quad[I_L0].real, label='quadrature')
-    ax.plot(r, V_poisson[I_L0].real, '--', label='Poisson')
-    ax.axvline(a, color='k', linestyle=':', linewidth=1.0)
-    ax.set_ylabel(rf'$V_{{{L}0}}(r)$')
+    ax.plot(r, V_quad[I_L0].real, label="quadrature")
+    ax.plot(r, V_poisson[I_L0].real, "--", label="Poisson")
+    ax.axvline(a, color="k", linestyle=":", linewidth=1.0)
+    ax.set_ylabel(rf"$V_{{{L}0}}(r)$")
     ax.grid(True)
 
 axes[0].legend()
-axes[-1].set_xlabel(r'$r$')
+axes[-1].set_xlabel(r"$r$")
 fig.suptitle(
-    'Clamped diatomic potential on the z-axis\n'
-    r'$Z_1 = 3$, $Z_2 = 1$, $a_1 = (0,0,-1.525)$, '
-    r'$a_2 = (0,0,1.525)$'
+    "Clamped diatomic potential on the z-axis\n"
+    r"$Z_1 = 3$, $Z_2 = 1$, $a_1 = (0,0,-1.525)$, "
+    r"$a_2 = (0,0,1.525)$"
 )
 fig.tight_layout()
 plt.show()

@@ -52,9 +52,7 @@ class FEMDVR(PseudospectralGrid):
         n_intervals = self.n_intervals
 
         n_constraints = n_intervals - 1
-        dim0 = np.sum(
-            n_points
-        )  # dimension of function space without boundary matching
+        dim0 = np.sum(n_points)  # dimension of function space without boundary matching
         D = np.zeros((dim0, dim0))
         R = np.zeros((dim0, dim0 - n_constraints))
         w = np.zeros((dim0,))
@@ -152,9 +150,7 @@ class FEMDVR(PseudospectralGrid):
         supplied element nodes, as in finite-element Gauss-Legendre-Lobatto DVR.
         """
         nodes = np.asarray(nodes)
-        close = np.isclose(
-            x, nodes, rtol=0.0, atol=100.0 * np.finfo(float).eps
-        )
+        close = np.isclose(x, nodes, rtol=0.0, atol=100.0 * np.finfo(float).eps)
         if np.any(close):
             values = np.zeros_like(nodes, dtype=float)
             values[np.argmax(close)] = 1.0
@@ -162,9 +158,7 @@ class FEMDVR(PseudospectralGrid):
 
         barycentric_weights = np.ones_like(nodes, dtype=float)
         for j in range(nodes.size):
-            barycentric_weights[j] = 1.0 / np.prod(
-                nodes[j] - np.delete(nodes, j)
-            )
+            barycentric_weights[j] = 1.0 / np.prod(nodes[j] - np.delete(nodes, j))
 
         scaled = barycentric_weights / (x - nodes)
         return scaled / np.sum(scaled)

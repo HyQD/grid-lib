@@ -28,6 +28,7 @@ class SoftCoreCoulomb:
     def __call__(self, x):
         return self.Z1 * self.Z2 / np.sqrt((x - self.x_c) ** 2 + self.a**2)
 
+
 class Molecule1D:
     def __init__(self, R=[0.0], Z=[1], a=1.0):
         """
@@ -43,10 +44,11 @@ class Molecule1D:
         if a <= 0:
             raise ValueError("The regularization parameter must be positive.")
         self.a = a
-        self.e_nuclear = 0 
+        self.e_nuclear = 0
         for A in range(len(R)):
-            for B in range(A+1, len(R)):
-                self.e_nuclear += Z[A] * Z[B] / np.sqrt((R[A] - R[B])**2)
+            for B in range(A + 1, len(R)):
+                self.e_nuclear += Z[A] * Z[B] / np.sqrt((R[A] - R[B]) ** 2)
+
     def __call__(self, x):
         if isinstance(x, float):
             potential = 0
@@ -63,10 +65,12 @@ class HarmonicOscillator:
         self.x_c = x_c
 
     def __call__(self, x):
-        return 0.5 * self.omega**2 * (x - self.x_c)**2
+        return 0.5 * self.omega**2 * (x - self.x_c) ** 2
+
 
 def harmonic_oscillator(x, omega, x_c=0.0):
-    return 0.5 * omega**2 * (x - x_c)**2
+    return 0.5 * omega**2 * (x - x_c) ** 2
+
 
 def soft_core_Coulomb(x, Z1=-1.0, Z2=-1.0, x_c=0.0, a=1.0):
     """

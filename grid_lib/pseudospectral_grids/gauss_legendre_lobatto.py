@@ -3,6 +3,7 @@ from numpy.polynomial import legendre
 from scipy.special import eval_legendre as Legendre
 from .pseudospectral_grid import PseudospectralGrid
 
+
 class Rational_map:
     def __init__(self, r_max=30, alpha=0.4):
         self.r_max = r_max
@@ -52,7 +53,9 @@ class GaussLegendreLobatto(PseudospectralGrid):
             if np.allclose(roots.imag, 0.0):
                 roots = roots.real
             else:
-                raise ValueError("Legendre derivative roots contain non-negligible imaginary parts")
+                raise ValueError(
+                    "Legendre derivative roots contain non-negligible imaginary parts"
+                )
         self.x[1:-1] = roots
 
         self.D1 = np.zeros((N + 1, N + 1))
@@ -72,24 +75,17 @@ class GaussLegendreLobatto(PseudospectralGrid):
             for j in range(N + 1):
                 if i == 0 and j == 0:
                     self.D1[i, j] = -(
-                        0.25
-                        * N
-                        * (N + 1)
-                        / np.sqrt(self.r_dot[i] * self.r_dot[j])
+                        0.25 * N * (N + 1) / np.sqrt(self.r_dot[i] * self.r_dot[j])
                     )
                 elif i == N and j == N:
                     self.D1[i, j] = (
-                        0.25
-                        * N
-                        * (N + 1)
-                        / np.sqrt(self.r_dot[i] * self.r_dot[j])
+                        0.25 * N * (N + 1) / np.sqrt(self.r_dot[i] * self.r_dot[j])
                     )
                 elif i == j and 1 <= j <= N - 1:
                     self.D1[i, j] = 0
                 else:
                     self.D1[i, j] = 1 / (
-                        (self.x[i] - self.x[j])
-                        * np.sqrt(self.r_dot[i] * self.r_dot[j])
+                        (self.x[i] - self.x[j]) * np.sqrt(self.r_dot[i] * self.r_dot[j])
                     )
                     if not symmetrize:
                         self.D1[i, j] *= self.PN_x2[i] / self.PN_x2[j]

@@ -48,8 +48,7 @@ for L in range(L_max + 1):
 ax1.set_xlabel(r"$r$ (a.u.)")
 ax1.set_ylabel(r"$f_{LM}(r)$")
 ax1.set_title(
-    rf"$e^{{i\mathbf{{k}}\cdot\mathbf{{r}}}}$, "
-    rf"$\mathbf{{k}} = (0,0,{K:.1f})$"
+    rf"$e^{{i\mathbf{{k}}\cdot\mathbf{{r}}}}$, " rf"$\mathbf{{k}} = (0,0,{K:.1f})$"
 )
 ax1.legend()
 ax1.set_xlim(0, r_max)
@@ -72,8 +71,7 @@ for L in range(L_max + 1):
 ax2.set_xlabel(r"$r$ (a.u.)")
 ax2.set_ylabel(r"$f_{LM}(r)$")
 ax2.set_title(
-    rf"$e^{{-i\mathbf{{k}}\cdot\mathbf{{r}}}}$, "
-    rf"$\mathbf{{k}} = (0,0,{K:.1f})$"
+    rf"$e^{{-i\mathbf{{k}}\cdot\mathbf{{r}}}}$, " rf"$\mathbf{{k}} = (0,0,{K:.1f})$"
 )
 ax2.legend()
 ax2.set_xlim(0, r_max)

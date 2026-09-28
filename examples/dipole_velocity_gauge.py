@@ -41,7 +41,6 @@ from grid_lib.spherical_coordinates.properties import (
 
 from grid_lib.spherical_coordinates.ground_state import compute_ground_state
 
-
 ### INPUTS #######################
 
 # pulse inputs

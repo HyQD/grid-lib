@@ -10,12 +10,11 @@ from grid_lib.spherical_coordinates.potentials import (
     gaussian_spherical_wave_expansion,
 )
 
+
 def g00(r, r0, A, alpha):
     R0 = np.linalg.norm(r0)
     prefactor = np.sqrt(np.pi) * A / (2 * alpha * r * R0)
-    return prefactor * (
-        np.exp(-alpha * (r - R0) ** 2) - np.exp(-alpha * (r + R0) ** 2)
-    )
+    return prefactor * (np.exp(-alpha * (r - R0) ** 2) - np.exp(-alpha * (r + R0) ** 2))
 
 
 # Gaussian parameters

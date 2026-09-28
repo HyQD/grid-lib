@@ -19,9 +19,7 @@ import time
 
 
 class V_psi_length_z(VPsi):
-    def __init__(
-        self, angular_matrix_elements, radial_matrix_elements, e_field_z
-    ):
+    def __init__(self, angular_matrix_elements, radial_matrix_elements, e_field_z):
         super().__init__(
             angular_matrix_elements,
             radial_matrix_elements,
@@ -293,43 +291,23 @@ class V_psi_velocity_first(VPsi):
                 psi_new += (
                     A2_x_t
                     * self.k_y
-                    * y_px_psi(
-                        psi, dpsi_dr, self.y_x_Omega, self.y_px_beta, self.r
-                    )
+                    * y_px_psi(psi, dpsi_dr, self.y_x_Omega, self.y_px_beta, self.r)
                 )
 
+                psi_new += A1_x_t * A2_x_t * self.k_y * y_psi(psi, self.y_Omega, self.r)
                 psi_new += (
-                    A1_x_t
-                    * A2_x_t
-                    * self.k_y
-                    * y_psi(psi, self.y_Omega, self.r)
-                )
-                psi_new += (
-                    0.5
-                    * A2_x_t**2
-                    * self.k_y**2
-                    * y_y_psi(psi, self.y_y_Omega, self.r)
+                    0.5 * A2_x_t**2 * self.k_y**2 * y_y_psi(psi, self.y_y_Omega, self.r)
                 )
             if self.z_propagation:
                 psi_new += (
                     A2_x_t
                     * self.k_z
-                    * y_px_psi(
-                        psi, dpsi_dr, self.z_x_Omega, self.z_px_beta, self.r
-                    )
+                    * y_px_psi(psi, dpsi_dr, self.z_x_Omega, self.z_px_beta, self.r)
                 )
 
+                psi_new += A1_x_t * A2_x_t * self.k_z * y_psi(psi, self.z_Omega, self.r)
                 psi_new += (
-                    A1_x_t
-                    * A2_x_t
-                    * self.k_z
-                    * y_psi(psi, self.z_Omega, self.r)
-                )
-                psi_new += (
-                    0.5
-                    * A2_x_t**2
-                    * self.k_z**2
-                    * y_y_psi(psi, self.z_z_Omega, self.r)
+                    0.5 * A2_x_t**2 * self.k_z**2 * y_y_psi(psi, self.z_z_Omega, self.r)
                 )
 
         if self.y_polarized:
@@ -345,44 +323,24 @@ class V_psi_velocity_first(VPsi):
                 psi_new += (
                     A2_y_t
                     * self.k_x
-                    * y_px_psi(
-                        psi, dpsi_dr, self.x_y_Omega, self.x_py_beta, self.r
-                    )
+                    * y_px_psi(psi, dpsi_dr, self.x_y_Omega, self.x_py_beta, self.r)
                 )
 
+                psi_new += A1_y_t * A2_y_t * self.k_x * y_psi(psi, self.x_Omega, self.r)
                 psi_new += (
-                    A1_y_t
-                    * A2_y_t
-                    * self.k_x
-                    * y_psi(psi, self.x_Omega, self.r)
-                )
-                psi_new += (
-                    0.5
-                    * A2_y_t**2
-                    * self.k_x**2
-                    * y_y_psi(psi, self.x_x_Omega, self.r)
+                    0.5 * A2_y_t**2 * self.k_x**2 * y_y_psi(psi, self.x_x_Omega, self.r)
                 )
 
             if self.z_propagation:
                 psi_new += (
                     A2_y_t
                     * self.k_z
-                    * y_px_psi(
-                        psi, dpsi_dr, self.z_y_Omega, self.z_py_beta, self.r
-                    )
+                    * y_px_psi(psi, dpsi_dr, self.z_y_Omega, self.z_py_beta, self.r)
                 )
 
+                psi_new += A1_y_t * A2_y_t * self.k_z * y_psi(psi, self.z_Omega, self.r)
                 psi_new += (
-                    A1_y_t
-                    * A2_y_t
-                    * self.k_z
-                    * y_psi(psi, self.z_Omega, self.r)
-                )
-                psi_new += (
-                    0.5
-                    * A2_y_t**2
-                    * self.k_z**2
-                    * y_y_psi(psi, self.z_z_Omega, self.r)
+                    0.5 * A2_y_t**2 * self.k_z**2 * y_y_psi(psi, self.z_z_Omega, self.r)
                 )
 
         if self.z_polarized:
@@ -398,44 +356,24 @@ class V_psi_velocity_first(VPsi):
                 psi_new += (
                     A2_z_t
                     * self.k_x
-                    * y_px_psi(
-                        psi, dpsi_dr, self.x_z_Omega, self.x_pz_beta, self.r
-                    )
+                    * y_px_psi(psi, dpsi_dr, self.x_z_Omega, self.x_pz_beta, self.r)
                 )
 
+                psi_new += A1_z_t * A2_z_t * self.k_x * y_psi(psi, self.x_Omega, self.r)
                 psi_new += (
-                    A1_z_t
-                    * A2_z_t
-                    * self.k_x
-                    * y_psi(psi, self.x_Omega, self.r)
-                )
-                psi_new += (
-                    0.5
-                    * A2_z_t**2
-                    * self.k_x**2
-                    * y_y_psi(psi, self.x_x_Omega, self.r)
+                    0.5 * A2_z_t**2 * self.k_x**2 * y_y_psi(psi, self.x_x_Omega, self.r)
                 )
 
             if self.y_propagation:
                 psi_new += (
                     A2_z_t
                     * self.k_y
-                    * y_px_psi(
-                        psi, dpsi_dr, self.y_z_Omega, self.y_pz_beta, self.r
-                    )
+                    * y_px_psi(psi, dpsi_dr, self.y_z_Omega, self.y_pz_beta, self.r)
                 )
 
+                psi_new += A1_z_t * A2_z_t * self.k_y * y_psi(psi, self.y_Omega, self.r)
                 psi_new += (
-                    A1_z_t
-                    * A2_z_t
-                    * self.k_y
-                    * y_psi(psi, self.y_Omega, self.r)
-                )
-                psi_new += (
-                    0.5
-                    * A2_z_t**2
-                    * self.k_y**2
-                    * y_y_psi(psi, self.y_y_Omega, self.r)
+                    0.5 * A2_z_t**2 * self.k_y**2 * y_y_psi(psi, self.y_y_Omega, self.r)
                 )
 
         if ravel:
@@ -538,9 +476,7 @@ class V_psi_full_orders(V_psi_PlaneWaveExpansion):
                 + self.a_field_z_p(t) * self.arr_contr_with_ddr_m[L]
             )
 
-            psi_new -= contract(
-                "IJ, Jk->Ik", arr_contr_with_ddr, dpsi_dr_sph_jn
-            )
+            psi_new -= contract("IJ, Jk->Ik", arr_contr_with_ddr, dpsi_dr_sph_jn)
 
             psi_r = contract("k, Ik->Ik", 1 / self.r, psi)
             psi_r_sph_jn = contract("k, Ik->Ik", sph_jn, psi_r)
@@ -639,14 +575,10 @@ class V_psi_full(V_psi_PlaneWaveExpansion):
         )
 
         psi_new += (
-            (1 / 8)
-            * self.a_field2_z_m(t)
-            * contract("IJk, Jk->Ik", self.expkr2_p, psi)
+            (1 / 8) * self.a_field2_z_m(t) * contract("IJk, Jk->Ik", self.expkr2_p, psi)
         )
         psi_new += (
-            (1 / 8)
-            * self.a_field2_z_p(t)
-            * contract("IJk, Jk->Ik", self.expkr2_m, psi)
+            (1 / 8) * self.a_field2_z_p(t) * contract("IJk, Jk->Ik", self.expkr2_m, psi)
         )
 
         if ravel:
