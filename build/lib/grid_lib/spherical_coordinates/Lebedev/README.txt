@@ -1,1 +1,0 @@
-The Lebedev quadrature weights and points are taken from: https://people.sc.fsu.edu/~jburkardt/datasets/sphere_lebedev_rule/sphere_lebedev_rule.html
