@@ -1,11 +1,9 @@
 from .grid import (
-    GridKind,
     NodalDVRGrid,
     ProlateSpheroidalGrid,
     lagrange_derivative_matrix,
     map_standard_interval,
     right_radau_nodes_weights,
-    setup_femdvr_interval,
     setup_gauss_legendre_interval,
     setup_prolate_spheroidal_grid,
     setup_radau_lobatto_femdvr_interval,
@@ -48,7 +46,6 @@ from .operators import (
 )
 
 __all__ = [
-    "GridKind",
     "HaxtonPoissonCoulombSolver",
     "NodalDVRGrid",
     "NeumannCoulombSolver",
@@ -82,7 +79,6 @@ __all__ = [
     "restrict_matrix",
     "right_radau_nodes_weights",
     "separable_kinetic_matrices",
-    "setup_femdvr_interval",
     "setup_gauss_legendre_interval",
     "setup_prolate_spheroidal_grid",
     "setup_radau_lobatto_femdvr_interval",

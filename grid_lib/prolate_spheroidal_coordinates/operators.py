@@ -27,7 +27,7 @@ def validate_axis_free_grid(grid: ProlateSpheroidalGrid) -> None:
         raise ValueError(
             "Prolate operators require an axis-free Radau-type grid without "
             "xi = 1 or eta = +/-1 nodes. Use "
-            "setup_prolate_spheroidal_grid(..., grid_kind='radau')."
+            "setup_prolate_spheroidal_grid(...)."
         )
 
 
@@ -77,7 +77,7 @@ def xi_derivative_matrix(
     if np.any(factor <= 0.0):
         raise ValueError(
             "Odd-|m| sectors require xi nodes away from xi = 1. Use "
-            "setup_prolate_spheroidal_grid(..., grid_kind='radau')."
+            "setup_prolate_spheroidal_grid(...)."
         )
 
     factor_derivative = grid.xi / factor
@@ -101,7 +101,7 @@ def eta_derivative_matrix(
     if np.any(factor <= 0.0):
         raise ValueError(
             "Odd-|m| sectors require eta nodes away from eta = +/-1. Use "
-            "setup_prolate_spheroidal_grid(..., grid_kind='radau')."
+            "setup_prolate_spheroidal_grid(...)."
         )
 
     factor_derivative = -grid.eta / factor

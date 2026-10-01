@@ -1,19 +1,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal
 
 import numpy as np
 from numpy.polynomial import legendre
 from scipy.special import roots_jacobi
 
-from grid_lib.pseudospectral_grids.femdvr import FEMDVR
 from grid_lib.pseudospectral_grids.gauss_legendre_lobatto import (
     GaussLegendreLobatto,
     Linear_map,
 )
-
-GridKind = Literal["femdvr", "gll", "radau"]
 
 
 @dataclass(frozen=True)
@@ -76,17 +72,14 @@ def setup_prolate_spheroidal_grid(
     points_per_element: int = 8,
     xi_points_per_element: int | None = None,
     eta_points_per_element: int | None = None,
-    grid_kind: GridKind = "radau",
-    xi_degree: int | None = None,
     eta_degree: int | None = None,
 ) -> ProlateSpheroidalGrid:
     """Create a tensor-product grid in prolate spheroidal coordinates.
 
-    The default ``grid_kind="radau"`` uses a right-Radau first xi element,
-    Lobatto later xi elements, and Gauss-Legendre eta nodes.  This is the grid
-    expected by the prolate one-electron operators.  The ``"femdvr"`` and
-    ``"gll"`` grid kinds remain available as lower-level grid construction
-    utilities.
+    The xi grid uses a right-Radau first element and Lobatto nodes on later
+    elements.  The eta grid uses a single Gauss-Legendre quadrature over
+    [-1, 1].  This axis-free grid is the one expected by the prolate
+    one-electron and Coulomb operators.
     """
 
     if internuclear_distance <= 0.0:
@@ -94,46 +87,19 @@ def setup_prolate_spheroidal_grid(
     if xi_max <= 1.0:
         raise ValueError("xi_max must be greater than 1.")
 
-    if grid_kind == "femdvr":
-        xi_grid = setup_femdvr_interval(
-            1.0,
-            xi_max,
-            n_elements=xi_elements,
-            points_per_element=xi_points_per_element or points_per_element,
-        )
-        eta_grid = setup_femdvr_interval(
-            -1.0,
-            1.0,
-            n_elements=eta_elements,
-            points_per_element=eta_points_per_element or points_per_element,
-        )
-    elif grid_kind == "gll":
-        xi_grid = GaussLegendreLobatto(
-            xi_degree if xi_degree is not None else points_per_element - 1,
-            Linear_map(1.0, xi_max),
-            symmetrize=False,
-        )
-        eta_grid = GaussLegendreLobatto(
-            eta_degree if eta_degree is not None else points_per_element - 1,
-            Linear_map(-1.0, 1.0),
-            symmetrize=False,
-        )
-    elif grid_kind == "radau":
-        xi_grid = setup_radau_lobatto_femdvr_interval(
-            1.0,
-            xi_max,
-            n_elements=xi_elements,
-            points_per_element=xi_points_per_element or points_per_element,
-        )
-        eta_grid = setup_gauss_legendre_interval(
-            -1.0,
-            1.0,
-            n_points=eta_degree
-            if eta_degree is not None
-            else eta_elements * (eta_points_per_element or points_per_element),
-        )
-    else:
-        raise ValueError("grid_kind must be 'femdvr', 'gll', or 'radau'.")
+    xi_grid = setup_radau_lobatto_femdvr_interval(
+        1.0,
+        xi_max,
+        n_elements=xi_elements,
+        points_per_element=xi_points_per_element or points_per_element,
+    )
+    eta_grid = setup_gauss_legendre_interval(
+        -1.0,
+        1.0,
+        n_points=eta_degree
+        if eta_degree is not None
+        else eta_elements * (eta_points_per_element or points_per_element),
+    )
 
     return ProlateSpheroidalGrid(
         internuclear_distance=internuclear_distance,
@@ -145,28 +111,6 @@ def setup_prolate_spheroidal_grid(
         eta_D1=np.asarray(eta_grid.D1),
         xi_grid=xi_grid,
         eta_grid=eta_grid,
-    )
-
-
-def setup_femdvr_interval(
-    x_min: float,
-    x_max: float,
-    n_elements: int,
-    points_per_element: int,
-) -> FEMDVR:
-    if n_elements < 1:
-        raise ValueError("n_elements must be at least 1.")
-    if points_per_element < 2:
-        raise ValueError("points_per_element must be at least 2.")
-
-    nodes = np.linspace(x_min, x_max, n_elements + 1)
-    n_points = np.full(n_elements, points_per_element, dtype=int)
-    return FEMDVR(
-        nodes,
-        n_points,
-        Linear_map,
-        GaussLegendreLobatto,
-        symmetrize=False,
     )
 
 
