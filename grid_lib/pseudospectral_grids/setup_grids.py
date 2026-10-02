@@ -44,7 +44,8 @@ def setup_grid(
 
     For 'radial-sinc' grids, grid_params should contain:
         - 'r_max' (float): Radial endpoint (required)
-        - 'N' (int): Number of grid points. Default: 40
+        - 'N' or 'n_r' (int): Number of positive radial grid points. Default: 40
+        - 'l_max' (int): Maximum angular momentum. Default: 0
 
     For 'gll' grids, grid_params should contain:
         - 'N' (int): Number of grid points minus 1 (polynomial degree)
@@ -114,9 +115,10 @@ def _setup_radial_sinc(params: Dict[str, Any]) -> RadialSincDVR:
         raise ValueError("'r_max' is required for 'radial-sinc' grid")
 
     r_max = params["r_max"]
-    N = params.get("N", 40)
+    n_r = params.get("n_r", params.get("N", 40))
+    l_max = params.get("l_max", 0)
 
-    return RadialSincDVR(r_max, N)
+    return RadialSincDVR(r_max, n_r, l_max)
 
 
 def _setup_gll(params: Dict[str, Any]) -> GaussLegendreLobatto:
