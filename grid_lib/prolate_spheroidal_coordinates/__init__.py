@@ -10,7 +10,7 @@ from .grid import (
     setup_radau_lobatto_femdvr_interval_from_boundaries,
 )
 from .electron_electron import (
-    HaxtonPoissonCoulombSolver,
+    PoissonCoulombSolver,
     NeumannCoulombSolver,
     NeumannCoulombTerm,
     associated_legendre_p,
@@ -19,7 +19,7 @@ from .electron_electron import (
     electron_electron_potential,
     electron_electron_potential_diagonal,
     electron_electron_potential_matrix,
-    haxton_t_inverse_coefficient,
+    t_inverse_coefficient,
     neumann_coefficient,
     normalized_associated_legendre_p,
     normalized_associated_legendre_q,
@@ -46,7 +46,7 @@ from .operators import (
 )
 
 __all__ = [
-    "HaxtonPoissonCoulombSolver",
+    "PoissonCoulombSolver",
     "NodalDVRGrid",
     "NeumannCoulombSolver",
     "NeumannCoulombTerm",
@@ -66,7 +66,7 @@ __all__ = [
     "electron_nuclear_coulomb_diagonal",
     "electron_nuclear_coulomb_matrix",
     "eta_derivative_matrix",
-    "haxton_t_inverse_coefficient",
+    "t_inverse_coefficient",
     "kinetic_energy_matrix",
     "lagrange_derivative_matrix",
     "map_standard_interval",

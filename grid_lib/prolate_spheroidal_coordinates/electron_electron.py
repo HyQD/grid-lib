@@ -85,7 +85,7 @@ class NeumannCoulombSolver:
 
 
 @dataclass(frozen=True)
-class HaxtonPoissonCoulombSolver:
+class PoissonCoulombSolver:
     """Appendix-B Poisson/Green's-function Coulomb solver.
 
     This implements the finite-box radial Green's-function construction used
@@ -108,7 +108,7 @@ class HaxtonPoissonCoulombSolver:
         grid: ProlateSpheroidalGrid,
         l_max: int,
         angular_m: int = 0,
-    ) -> "HaxtonPoissonCoulombSolver":
+    ) -> "PoissonCoulombSolver":
         validate_axis_free_grid(grid)
         order = abs(int(angular_m))
         if l_max < order:
@@ -164,7 +164,7 @@ class HaxtonPoissonCoulombSolver:
                 * q_boundary
                 / p_boundary
             )
-            poisson = haxton_t_inverse_coefficient(degree, order) * t_inverse
+            poisson = t_inverse_coefficient(degree, order) * t_inverse
             poisson /= np.sqrt(
                 weights_active[:, np.newaxis] * weights_active[np.newaxis, :]
             )
@@ -311,7 +311,7 @@ def neumann_coefficient(degree: int, order: int) -> float:
     )
 
 
-def haxton_t_inverse_coefficient(degree: int, order: int) -> float:
+def t_inverse_coefficient(degree: int, order: int) -> float:
     """Return the coefficient multiplying T_lm^-1.
 
     With the normalized P_l^m and SciPy Q_l^m conventions used here, the
