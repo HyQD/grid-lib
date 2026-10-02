@@ -1,5 +1,5 @@
 from .femdvr import FEMDVR
-from .sinc_dvr import SincDVR
+from .sinc_dvr import SincDVR, RadialSincDVR
 from .gauss_legendre_lobatto import (
     GaussLegendreLobatto,
     Linear_map,
@@ -12,6 +12,7 @@ from .pseudospectral_grid import PseudospectralGrid
 __all__ = [
     "FEMDVR",
     "SincDVR",
+    "RadialSincDVR",
     "GaussLegendreLobatto",
     "Linear_map",
     "Rational_map",
