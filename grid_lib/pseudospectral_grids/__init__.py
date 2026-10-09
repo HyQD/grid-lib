@@ -1,5 +1,6 @@
 from .femdvr import FEMDVR
 from .sinc_dvr import SincDVR, RadialSincDVR
+from .gauss_legendre import GaussLegendre
 from .gauss_legendre_lobatto import (
     GaussLegendreLobatto,
     Linear_map,
@@ -13,6 +14,7 @@ __all__ = [
     "FEMDVR",
     "SincDVR",
     "RadialSincDVR",
+    "GaussLegendre",
     "GaussLegendreLobatto",
     "Linear_map",
     "Rational_map",
