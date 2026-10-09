@@ -1,3 +1,4 @@
+from .angular_grid import GaussLegendreFourierGrid
 from .potentials import (
     Coulomb,
     SAE,
@@ -13,6 +14,7 @@ from .radial_poisson import (
 )
 
 __all__ = [
+    "GaussLegendreFourierGrid",
     "Coulomb",
     "SAE",
     "Gaussian_charge_distribution",
