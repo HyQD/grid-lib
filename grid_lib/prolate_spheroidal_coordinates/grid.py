@@ -3,9 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
-from numpy.polynomial import legendre
 from scipy.special import roots_jacobi
 
+from grid_lib.pseudospectral_grids.gauss_legendre import GaussLegendre
 from grid_lib.pseudospectral_grids.gauss_legendre_lobatto import (
     GaussLegendreLobatto,
     Linear_map,
@@ -119,20 +119,13 @@ def setup_gauss_legendre_interval(
     x_max: float,
     n_points: int,
 ) -> NodalDVRGrid:
-    if n_points < 1:
-        raise ValueError("n_points must be at least 1.")
+    """Create a Gauss-Legendre grid, retaining the nodal DVR interface."""
 
-    nodes, weights = legendre.leggauss(n_points)
-    points, physical_weights = map_standard_interval(
-        nodes,
-        weights,
-        x_min,
-        x_max,
-    )
+    grid = GaussLegendre(n_points, Linear_map(x_min, x_max))
     return NodalDVRGrid(
-        r=points,
-        weights=physical_weights,
-        D1=lagrange_derivative_matrix(points),
+        r=grid.r,
+        weights=grid.weights,
+        D1=grid.D1,
         nodes=np.array([x_min, x_max]),
         edge_indices=[],
     )
