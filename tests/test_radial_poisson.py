@@ -189,7 +189,7 @@ def test_two_grid_gamma_one_matches_existing_radial_coulomb():
 
     W_old = radial_Coulomb(femdvr, n_L=4)
     W_new = radial_Coulomb_femdvr_two_grid(
-        femdvr, femdvr, n_L=4, charge_gamma_terms=[(1.0, 1.0, 1.0)]
+        femdvr, femdvr, n_L=4, gamma_charge_terms=[(1.0, 1.0, 1.0)]
     )
 
     np.testing.assert_allclose(W_new, W_old, atol=1e-12, rtol=1e-12)
@@ -200,10 +200,10 @@ def test_two_grid_negative_gamma_has_multipole_parity():
     r2_grid = _femdvr(r_max=6.0, n_elem=3, points_per_elem=11)
 
     W_positive = radial_Coulomb_femdvr_two_grid(
-        r1_grid, r2_grid, n_L=4, charge_gamma_terms=[(1.0, 1.0, 2.0)]
+        r1_grid, r2_grid, n_L=4, gamma_charge_terms=[(2.0, 1.0, 1.0)]
     )
     W_negative = radial_Coulomb_femdvr_two_grid(
-        r1_grid, r2_grid, n_L=4, charge_gamma_terms=[(1.0, 1.0, -2.0)]
+        r1_grid, r2_grid, n_L=4, gamma_charge_terms=[(-2.0, 1.0, 1.0)]
     )
 
     for L in range(4):
@@ -221,7 +221,7 @@ def test_two_grid_scaled_nodes_match_discrete_same_grid_reference():
     r2_grid = _femdvr(r_max=6.0, n_elem=3, points_per_elem=11)
 
     W = radial_Coulomb_femdvr_two_grid(
-        r1_grid, r2_grid, n_L=4, charge_gamma_terms=[(1.0, 1.0, gamma)]
+        r1_grid, r2_grid, n_L=4, gamma_charge_terms=[(gamma, 1.0, 1.0)]
     )
     W_reference_grid = radial_Coulomb(r1_grid, n_L=4)
 
@@ -249,7 +249,7 @@ def test_two_grid_scaled_nodes_are_close_to_analytic_kernel():
     r2_grid = _femdvr(r_max=6.0, n_elem=3, points_per_elem=11)
 
     W = radial_Coulomb_femdvr_two_grid(
-        r1_grid, r2_grid, n_L=4, charge_gamma_terms=[(1.0, 1.0, gamma)]
+        r1_grid, r2_grid, n_L=4, gamma_charge_terms=[(gamma, 1.0, 1.0)]
     )
 
     r1 = r1_grid.r[1:-1]
@@ -276,7 +276,7 @@ def test_two_grid_gamma_zero_is_monopole_only():
 
     u_L = solve_radial_Poisson_femdvr_two_grid(r1_grid, r2_grid, n_L=4, gamma=0.0)
     W = radial_Coulomb_femdvr_two_grid(
-        r1_grid, r2_grid, n_L=4, charge_gamma_terms=[(2.0, -3.0, 0.0)]
+        r1_grid, r2_grid, n_L=4, gamma_charge_terms=[(0.0, 2.0, -3.0)]
     )
 
     r1 = r1_grid.r[1:-1]

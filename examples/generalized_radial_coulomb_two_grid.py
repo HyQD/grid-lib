@@ -42,10 +42,10 @@ R_grid = build_femdvr(r_max=6.0, n_elem=3, points_per_elem=11)
 
 L_max = 3
 gamma = 0.5
-terms = [(1.0, 1.0, gamma)]
+terms = [(gamma, 1.0, 1.0)]
 
 G_solved = radial_Coulomb_femdvr_two_grid(
-    r_grid, R_grid, n_L=L_max + 1, charge_gamma_terms=terms
+    r_grid, R_grid, n_L=L_max + 1, gamma_charge_terms=terms
 )
 
 G_exact = np.zeros_like(G_solved)
