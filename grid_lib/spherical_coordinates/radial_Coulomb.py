@@ -5,9 +5,21 @@ from grid_lib.spherical_coordinates.radial_poisson import (
 )
 
 
-def radial_Coulomb(GLL, n_L):
+def radial_Coulomb(GLL, n_L, *, method="inverse"):
+    """Construct same-grid radial Coulomb matrices.
 
-    tilde_V = solve_radial_Poisson_dvr(GLL, n_L)
+    Parameters
+    ----------
+    GLL
+        Radial DVR or FEM-DVR grid.
+    n_L : int
+        Number of Coulomb multipoles.
+    method : {"inverse", "solve"}, optional
+        Linear-algebra method passed to :func:`solve_radial_Poisson_dvr`.
+        Defaults to ``"inverse"`` for backward compatibility.
+    """
+
+    tilde_V = solve_radial_Poisson_dvr(GLL, n_L, method=method)
     r = GLL.r[1:-1]
     n_r = len(r)
 

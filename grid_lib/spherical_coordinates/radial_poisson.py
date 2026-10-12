@@ -2,7 +2,7 @@ import numpy as np
 from scipy.linalg import solve
 
 
-def solve_radial_Poisson_dvr(GLL, n_L):
+def solve_radial_Poisson_dvr(GLL, n_L, *, method="inverse"):
     r"""
     The integral 
     .. math::
@@ -51,7 +51,16 @@ def solve_radial_Poisson_dvr(GLL, n_L):
         An instance of the Gauss-Legendre-Lobatto grid object/class.
     n_L : int
         The number of angular momenta L to compute the radial Poisson equation for.
+    method : {"inverse", "solve"}, optional
+        Linear-algebra method used for the inhomogeneous Poisson equation.
+        ``"inverse"`` preserves the original implementation, which explicitly
+        forms the inverse before applying it to all right-hand sides.
+        ``"solve"`` passes all right-hand sides directly to
+        :func:`scipy.linalg.solve`. Defaults to ``"inverse"``.
     """
+    if method not in ("inverse", "solve"):
+        raise ValueError("method must be 'inverse' or 'solve'.")
+
     r_max = GLL.r[-1]
 
     # We solve the radial Poisson equation on the inner grid points
@@ -67,9 +76,11 @@ def solve_radial_Poisson_dvr(GLL, n_L):
 
         D2_L = D2 - np.diag(L * (L + 1) / r**2)
 
-        D2_L_inv = np.linalg.inv(D2_L)
         B_L = np.diag(-(2 * L + 1) / r)
-        tilde_vL_inhom = np.dot(D2_L_inv, B_L)
+        if method == "inverse":
+            tilde_vL_inhom = np.linalg.inv(D2_L) @ B_L
+        else:
+            tilde_vL_inhom = solve(D2_L, B_L, assume_a="gen")
 
         tilde_vL_hom = np.zeros((n_r, n_r))
         for a in range(n_r):
