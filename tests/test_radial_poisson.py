@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 from grid_lib.pseudospectral_grids.gauss_legendre_lobatto import (
     GaussLegendreLobatto,
     Linear_map,
@@ -149,6 +150,28 @@ def _femdvr(r_max, n_elem, points_per_elem):
     nodes = np.linspace(0.0, r_max, n_elem + 1)
     n_points = np.ones((n_elem,), dtype=int) * points_per_elem
     return FEMDVR(nodes, n_points, Linear_map, GaussLegendreLobatto)
+
+
+def test_same_grid_poisson_linear_algebra_methods_agree():
+    femdvr = _femdvr(r_max=16.0, n_elem=4, points_per_elem=21)
+
+    via_inverse = solve_radial_Poisson_dvr(femdvr, n_L=3, method="inverse")
+    via_solve = solve_radial_Poisson_dvr(femdvr, n_L=3, method="solve")
+
+    np.testing.assert_allclose(via_solve, via_inverse, atol=1e-12, rtol=1e-12)
+    np.testing.assert_allclose(
+        radial_Coulomb(femdvr, n_L=3, method="solve"),
+        radial_Coulomb(femdvr, n_L=3, method="inverse"),
+        atol=1e-12,
+        rtol=1e-12,
+    )
+
+
+def test_same_grid_poisson_rejects_unknown_method():
+    femdvr = _femdvr(r_max=8.0, n_elem=2, points_per_elem=7)
+
+    with pytest.raises(ValueError, match="inverse.*solve"):
+        solve_radial_Poisson_dvr(femdvr, n_L=1, method="unknown")
 
 
 def test_femdvr_interpolation_matrix_is_identity_on_grid_nodes():
