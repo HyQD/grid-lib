@@ -1,4 +1,8 @@
 from .angular_grid import GaussLegendreFourierGrid
+from .differential_operators import (
+    SphericalNodalDifferentialOperator,
+    SphericalVectorField,
+)
 from .potentials import (
     Coulomb,
     SAE,
@@ -15,6 +19,8 @@ from .radial_poisson import (
 
 __all__ = [
     "GaussLegendreFourierGrid",
+    "SphericalNodalDifferentialOperator",
+    "SphericalVectorField",
     "Coulomb",
     "SAE",
     "Gaussian_charge_distribution",
