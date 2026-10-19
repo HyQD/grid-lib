@@ -72,3 +72,36 @@ that product is the function being integrated. Arbitrary non-bandlimited
 functions require quadrature convergence checks.
 The grid does not implement spherical-harmonic transforms or change the
 existing Lebedev-based matrix-element functions.
+
+## Nodal gradient and divergence
+
+`SphericalNodalDifferentialOperator` acts on ordinary scalar nodal values
+with shape `(..., n_r, n_theta, n_phi)`. It combines the radial grid's first
+derivative matrix, the Gauss-Legendre derivative in $x=\cos\theta$, and a
+periodic Fourier derivative in $\phi$. The physical gradient components are
+
+$$
+\nabla f = \boldsymbol e_r\frac{\partial f}{\partial r}
++ \boldsymbol e_\theta\frac{1}{r}\frac{\partial f}{\partial\theta}
++ \boldsymbol e_\phi\frac{1}{r\sin\theta}\frac{\partial f}{\partial\phi}.
+$$
+
+For orthonormal spherical components
+$\boldsymbol A=(A_r,A_\theta,A_\phi)$, the strong divergence is
+
+$$
+\nabla\mathbin{\cdot}\boldsymbol A =
+\frac{1}{r^2}\frac{\partial}{\partial r}(r^2 A_r)
++ \frac{1}{r\sin\theta}\frac{\partial}{\partial\theta}(\sin\theta A_\theta)
++ \frac{1}{r\sin\theta}\frac{\partial A_\phi}{\partial\phi}.
+$$
+
+The class also provides the quadrature-weighted adjoint of the gradient.
+This gives the discretely variational counterpart of minus the divergence,
+which is useful for functionals depending on density gradients.
+
+All active radial nodes must be strictly positive. For an FEM-DVR grid with
+an endpoint at the origin, select an active radial subset explicitly.
+Differential methods may still receive values on the complete radial grid;
+the endpoint values then contribute to derivatives evaluated at active nodes.
+Passing only active values instead imposes zero at omitted nodes.
