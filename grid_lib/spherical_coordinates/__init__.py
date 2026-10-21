@@ -1,4 +1,13 @@
 from .angular_grid import GaussLegendreFourierGrid
+from .angular_momentum import (
+    LM_to_I,
+    angular_matrix_element,
+    get_y,
+    get_y_value,
+    get_ybar,
+    get_ybar_value,
+    number_of_lm_states,
+)
 from .differential_operators import (
     SphericalNodalDifferentialOperator,
     SphericalVectorField,
@@ -19,13 +28,20 @@ from .radial_poisson import (
 
 __all__ = [
     "GaussLegendreFourierGrid",
+    "LM_to_I",
     "SphericalNodalDifferentialOperator",
     "SphericalVectorField",
+    "angular_matrix_element",
     "Coulomb",
     "SAE",
     "Gaussian_charge_distribution",
     "clamped_molecular_potential_Poisson",
     "clamped_molecular_potential_quadrature",
+    "get_y",
+    "get_y_value",
+    "get_ybar",
+    "get_ybar_value",
+    "number_of_lm_states",
     "Propagator",
     "BiCGstab",
     "radial_Coulomb",
