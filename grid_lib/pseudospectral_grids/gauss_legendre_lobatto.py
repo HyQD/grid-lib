@@ -93,25 +93,32 @@ class GaussLegendreLobatto(PseudospectralGrid):
         self.D2 = np.dot(self.D1, self.D1)
 
     def cardinal_function(self, y, j):
+        """Evaluate the cardinal polynomial of node ``j`` at ``y``.
 
-        if np.isscalar(y) and y == self.x[j]:
-            return self.weights[j]
-        elif isinstance(y, np.ndarray):
-            with np.errstate(divide="ignore", invalid="ignore"):
-                result = (
-                    -1
-                    / (self.N * (self.N + 1) * self.PN_x2[j])
-                    * (1 - y**2)
-                    * legendre.legval(y, self.dc)
-                    / (y - self.x[j])
-                )
-            result[y == self.x[j]] = 1.0
-            return result
-        else:
-            return (
-                -1
-                / (self.N * (self.N + 1) * self.PN_x2[j])
-                * (1 - y**2)
-                * legendre.legval(y, self.dc)
-                / (y - self.x[j])
+        The second barycentric form remains accurate close to the Lobatto
+        nodes, where the closed form contains a quotient of two quantities
+        that both approach zero.  The denominator is accumulated one node at
+        a time to keep temporary storage proportional to the size of ``y``.
+        """
+        points = np.asarray(y).reshape(-1)
+        barycentric_weights = 1 / self.PN_x2
+        dtype = np.result_type(points.dtype, self.x.dtype, barycentric_weights.dtype)
+        denominator = np.zeros(points.shape, dtype=dtype)
+        on_node = np.zeros(points.shape, dtype=bool)
+
+        with np.errstate(divide="ignore", invalid="ignore"):
+            for node, weight in zip(self.x, barycentric_weights):
+                distance = points - node
+                on_node |= distance == 0
+                denominator += weight / distance
+
+            result = (
+                barycentric_weights[j] / (points - self.x[j]) / denominator
             )
+
+        target_node = points == self.x[j]
+        result[on_node] = target_node[on_node]
+
+        if np.isscalar(y):
+            return result[0]
+        return result.reshape(np.shape(y))
