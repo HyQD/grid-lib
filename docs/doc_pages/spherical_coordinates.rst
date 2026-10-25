@@ -56,3 +56,22 @@ where :math:`Y_{l,m}(\theta, \phi)` are the spherical harmonics and :math:`l_{ma
     \nabla^2 \Psi(\mathbf{r}) = \sum_{l,m} \frac{1}{r} \left(\frac{d^2 u_{l,m}(r)}{d r^2} - \frac{l(l+1)}{r^2} u_{l,m}(r) \right) Y_{l,m}(\theta, \phi)
 
 
+Absorbing-boundary profiles
+===========================
+
+The :mod:`grid_lib.spherical_coordinates.absorbing_boundaries` module provides
+radial absorber profiles that can be reused by time-dependent applications.
+``RadialCosineMask(r0, n=4)`` evaluates to one below ``r0`` and decreases to
+zero at the outer boundary. ``CubicCAP(alpha, eta=1)`` evaluates the complex
+absorbing potential
+
+.. math::
+
+    W(r) = -i\eta\max(r-\alpha r_{\max},0)^3.
+
+Both objects are called as ``profile(radial_grid, r_max)``. The established
+``mask_function(r, r_max, r0, n=4)`` import from
+``grid_lib.spherical_coordinates.utils`` remains available for backwards
+compatibility and uses the same implementation as ``RadialCosineMask``.
+
+

@@ -1,4 +1,5 @@
 from .angular_grid import GaussLegendreFourierGrid
+from .absorbing_boundaries import CubicCAP, RadialCosineMask, mask_function
 from .angular_momentum import (
     LM_to_I,
     angular_matrix_element,
@@ -28,6 +29,9 @@ from .radial_poisson import (
 
 __all__ = [
     "GaussLegendreFourierGrid",
+    "CubicCAP",
+    "RadialCosineMask",
+    "mask_function",
     "LM_to_I",
     "SphericalNodalDifferentialOperator",
     "SphericalVectorField",

@@ -3,6 +3,8 @@ from opt_einsum import contract
 import scipy.special
 from packaging import version
 
+from .absorbing_boundaries import mask_function
+
 
 def lowdin_orthogonalize(A, weights):
 
@@ -34,20 +36,6 @@ class Counter:
 
 def quadrature(weights, f):
     return np.sum(weights * f)
-
-
-def mask_function(r, r_max, r0, n=4):
-    mask_r = np.zeros(len(r))
-
-    ind1 = r < r0
-    ind2 = r == r_max
-    ind3 = np.invert(ind1 + ind2)
-
-    mask_r[ind1] = 1
-    mask_r[ind2] = 0
-    mask_r[ind3] = np.cos(np.pi * (r[ind3] - r0) / (2 * (r_max - r0))) ** (1 / n)
-
-    return mask_r
 
 
 def sph_harm_y(m, l, phi, theta):
