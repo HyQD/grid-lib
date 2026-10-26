@@ -4,7 +4,7 @@ from grid_lib.pseudospectral_grids.gauss_legendre_lobatto import (
     Linear_map,
 )
 from .pseudospectral_grid import PseudospectralGrid
-from scipy.sparse import coo_matrix
+from scipy.sparse import coo_matrix, diags
 import matplotlib.pyplot as plt
 from typing import Type
 
@@ -42,6 +42,13 @@ class FEMDVR(PseudospectralGrid):
             self.w (ndarray): Weights
             self.dvr (list): List of dvr object instances for each element
             self.edge_indices (ndarray): Indices of elements of x corresponding to element boundaries
+            self.element_dof_maps (tuple): Local-to-global degree-of-freedom maps
+            self.bridge_indices (ndarray): Shared interior element-boundary indices
+            self.dof_owner (ndarray): Owning element of every global degree of freedom
+            self.element_owned_dof_masks (tuple): Locally owned entries of each map
+            self.local_mass_matrices (tuple): Element mass matrices
+            self.local_first_derivative_matrices (tuple): Element weak first derivatives
+            self.local_stiffness_matrices (tuple): Element positive stiffness matrices
 
         """
 
@@ -140,6 +147,295 @@ class FEMDVR(PseudospectralGrid):
         self.edge_indices = block_start2.copy()
         self.edge_indices[-1] -= 1
         self.element_class = element_class
+
+        # Retain the element topology and weak-form operators used above.  The
+        # shared endpoint between adjacent elements has one global index and
+        # therefore occurs in both neighboring element maps.
+        self.element_dof_maps = tuple(
+            np.arange(block_start2[i], block_start2[i] + dim[i], dtype=int)
+            for i in range(n_intervals)
+        )
+        self.bridge_indices = np.asarray(self.edge_indices[1:-1], dtype=int)
+
+        # Assign shared bridge degrees of freedom to the element on their left.
+        # Ownership is only topology metadata; both elements still contribute
+        # when a local operator is assembled or applied.
+        self.dof_owner = np.full(self.r.size, -1, dtype=int)
+        element_owned_dof_masks = []
+        for element, dof_map in enumerate(self.element_dof_maps):
+            owned = self.dof_owner[dof_map] < 0
+            self.dof_owner[dof_map[owned]] = element
+            element_owned_dof_masks.append(owned)
+        self.element_owned_dof_masks = tuple(element_owned_dof_masks)
+        self.element_owned_dof_maps = tuple(
+            dof_map[owned]
+            for dof_map, owned in zip(
+                self.element_dof_maps, self.element_owned_dof_masks
+            )
+        )
+
+        self.local_mass_matrices = tuple(
+            np.diag(element.weights) for element in self.dvr
+        )
+        self.local_first_derivative_matrices = tuple(
+            element.weights[:, np.newaxis] * element.D1 for element in self.dvr
+        )
+        self.local_stiffness_matrices = tuple(
+            element.D1.T
+            @ (element.weights[:, np.newaxis] * element.D1)
+            for element in self.dvr
+        )
+
+    @staticmethod
+    def _normalized_axis(axis, ndim):
+        axis = int(axis)
+        if axis < 0:
+            axis += ndim
+        if axis < 0 or axis >= ndim:
+            raise np.exceptions.AxisError(axis, ndim=ndim)
+        return axis
+
+    def element_values(self, values, axis=-1):
+        """Gather global nodal values into one array per finite element.
+
+        Parameters
+        ----------
+        values : array_like
+            Values whose ``axis`` dimension is the global FEM-DVR dimension.
+        axis : int, optional
+            Axis containing the FEM-DVR degrees of freedom.
+
+        Returns
+        -------
+        tuple of ndarray
+            Element arrays in element order.  A bridge value occurs in both
+            arrays adjacent to that bridge.
+        """
+        values = np.asarray(values)
+        axis = self._normalized_axis(axis, values.ndim)
+        if values.shape[axis] != self.r.size:
+            raise ValueError(
+                f"values axis has length {values.shape[axis]}; expected "
+                f"{self.r.size}."
+            )
+        return tuple(
+            np.take(values, dof_map, axis=axis) for dof_map in self.element_dof_maps
+        )
+
+    def assemble_element_vectors(self, element_vectors, axis=-1):
+        """Scatter-add element vectors into the global FEM-DVR ordering.
+
+        Contributions from both elements adjacent to a bridge are added.  This
+        is the vector analogue of finite-element matrix assembly.
+        """
+        element_vectors = tuple(np.asarray(vector) for vector in element_vectors)
+        if len(element_vectors) != self.n_intervals:
+            raise ValueError(
+                f"Received {len(element_vectors)} element vectors; expected "
+                f"{self.n_intervals}."
+            )
+        if not element_vectors:
+            raise ValueError("At least one element vector is required.")
+
+        normalized_axis = self._normalized_axis(axis, element_vectors[0].ndim)
+        moved_vectors = []
+        leading_shape = None
+        for element, (vector, dof_map) in enumerate(
+            zip(element_vectors, self.element_dof_maps)
+        ):
+            current_axis = self._normalized_axis(axis, vector.ndim)
+            if current_axis != normalized_axis:
+                raise ValueError("All element vectors must have the same rank.")
+            moved = np.moveaxis(vector, current_axis, -1)
+            if moved.shape[-1] != dof_map.size:
+                raise ValueError(
+                    f"Element {element} vector has length {moved.shape[-1]}; "
+                    f"expected {dof_map.size}."
+                )
+            if leading_shape is None:
+                leading_shape = moved.shape[:-1]
+            elif moved.shape[:-1] != leading_shape:
+                raise ValueError(
+                    "All element vectors must have matching non-FEM-DVR dimensions."
+                )
+            moved_vectors.append(moved)
+
+        dtype = np.result_type(*(vector.dtype for vector in moved_vectors))
+        assembled = np.zeros((*leading_shape, self.r.size), dtype=dtype)
+        for vector, dof_map in zip(moved_vectors, self.element_dof_maps):
+            assembled[..., dof_map] += vector
+
+        return np.moveaxis(assembled, -1, normalized_axis)
+
+    def apply_element_matrices(self, values, element_matrices, axis=-1):
+        """Apply element matrices and scatter-add their local results.
+
+        This method performs an assembly-free action of a weak-form operator.
+        It does not construct the corresponding global matrix.
+        """
+        element_matrices = tuple(np.asarray(matrix) for matrix in element_matrices)
+        if len(element_matrices) != self.n_intervals:
+            raise ValueError(
+                f"Received {len(element_matrices)} element matrices; expected "
+                f"{self.n_intervals}."
+            )
+
+        local_values = self.element_values(values, axis=axis)
+        local_results = []
+        for element, (matrix, local_value, dof_map) in enumerate(
+            zip(element_matrices, local_values, self.element_dof_maps)
+        ):
+            expected_shape = (dof_map.size, dof_map.size)
+            if matrix.shape != expected_shape:
+                raise ValueError(
+                    f"Element {element} matrix has shape {matrix.shape}; expected "
+                    f"{expected_shape}."
+                )
+            moved = np.moveaxis(local_value, axis, -1)
+            result = np.einsum("ij,...j->...i", matrix, moved, optimize=True)
+            local_results.append(np.moveaxis(result, -1, axis))
+
+        return self.assemble_element_vectors(local_results, axis=axis)
+
+    @staticmethod
+    def _scale_along_axis(values, scale, axis):
+        shape = [1] * values.ndim
+        shape[axis] = scale.size
+        return values * scale.reshape(shape)
+
+    def _apply_weak_operator(
+        self, values, element_matrices, representation, axis=-1
+    ):
+        values = np.asarray(values)
+        axis = self._normalized_axis(axis, values.ndim)
+        if representation not in {"weak", "strong", "symmetric"}:
+            raise ValueError(
+                "representation must be 'weak', 'strong', or 'symmetric'."
+            )
+
+        operator_input = values
+        if representation == "symmetric":
+            operator_input = self._scale_along_axis(
+                values, 1.0 / np.sqrt(self.weights), axis
+            )
+
+        result = self.apply_element_matrices(
+            operator_input, element_matrices, axis=axis
+        )
+        if representation == "strong":
+            return self._scale_along_axis(result, 1.0 / self.weights, axis)
+        if representation == "symmetric":
+            return self._scale_along_axis(
+                result, 1.0 / np.sqrt(self.weights), axis
+            )
+        return result
+
+    def apply_local_mass(self, values, axis=-1):
+        """Apply the assembled mass matrix without constructing it."""
+        return self.apply_element_matrices(
+            values, self.local_mass_matrices, axis=axis
+        )
+
+    def apply_local_first_derivative(
+        self, values, representation="strong", axis=-1
+    ):
+        """Apply the element-local first derivative.
+
+        ``representation='weak'`` returns the assembled weak action,
+        ``'strong'`` applies the inverse mass matrix afterward, and
+        ``'symmetric'`` applies the square-root mass transformation used by
+        :attr:`D1_symmetric`.
+        """
+        return self._apply_weak_operator(
+            values,
+            self.local_first_derivative_matrices,
+            representation,
+            axis=axis,
+        )
+
+    def apply_local_stiffness(self, values, representation="weak", axis=-1):
+        """Apply the positive FEM-DVR stiffness operator."""
+        return self._apply_weak_operator(
+            values, self.local_stiffness_matrices, representation, axis=axis
+        )
+
+    def apply_local_second_derivative(
+        self, values, representation="strong", axis=-1
+    ):
+        """Apply the second derivative using element-local stiffness actions."""
+        return -self.apply_local_stiffness(
+            values, representation=representation, axis=axis
+        )
+
+    def assemble_local_matrix(self, element_matrices, format="csr"):
+        """Assemble element matrices into an optional sparse global matrix."""
+        element_matrices = tuple(np.asarray(matrix) for matrix in element_matrices)
+        if len(element_matrices) != self.n_intervals:
+            raise ValueError(
+                f"Received {len(element_matrices)} element matrices; expected "
+                f"{self.n_intervals}."
+            )
+
+        rows = []
+        columns = []
+        data = []
+        for element, (matrix, dof_map) in enumerate(
+            zip(element_matrices, self.element_dof_maps)
+        ):
+            expected_shape = (dof_map.size, dof_map.size)
+            if matrix.shape != expected_shape:
+                raise ValueError(
+                    f"Element {element} matrix has shape {matrix.shape}; expected "
+                    f"{expected_shape}."
+                )
+            local_rows, local_columns = np.meshgrid(
+                dof_map, dof_map, indexing="ij"
+            )
+            rows.append(local_rows.ravel())
+            columns.append(local_columns.ravel())
+            data.append(matrix.ravel())
+
+        matrix = coo_matrix(
+            (np.concatenate(data), (np.concatenate(rows), np.concatenate(columns))),
+            shape=(self.r.size, self.r.size),
+        )
+        return matrix.asformat(format)
+
+    def _sparse_weak_representation(self, matrix, representation, format):
+        if representation not in {"weak", "strong", "symmetric"}:
+            raise ValueError(
+                "representation must be 'weak', 'strong', or 'symmetric'."
+            )
+        if representation == "strong":
+            matrix = diags(1.0 / self.weights) @ matrix
+        elif representation == "symmetric":
+            inverse_sqrt_mass = diags(1.0 / np.sqrt(self.weights))
+            matrix = inverse_sqrt_mass @ matrix @ inverse_sqrt_mass
+        return matrix.asformat(format)
+
+    def sparse_mass_matrix(self, format="csr"):
+        """Return the assembled mass matrix in a SciPy sparse format."""
+        return self.assemble_local_matrix(self.local_mass_matrices, format=format)
+
+    def sparse_first_derivative_matrix(self, representation="strong", format="csr"):
+        """Return the assembled sparse first-derivative matrix."""
+        weak = self.assemble_local_matrix(
+            self.local_first_derivative_matrices, format="csr"
+        )
+        return self._sparse_weak_representation(weak, representation, format)
+
+    def sparse_stiffness_matrix(self, representation="weak", format="csr"):
+        """Return the assembled sparse positive stiffness matrix."""
+        weak = self.assemble_local_matrix(self.local_stiffness_matrices, format="csr")
+        return self._sparse_weak_representation(weak, representation, format)
+
+    def sparse_second_derivative_matrix(
+        self, representation="strong", format="csr"
+    ):
+        """Return the assembled sparse second-derivative matrix."""
+        return -self.sparse_stiffness_matrix(
+            representation=representation, format=format
+        )
 
     @staticmethod
     def cardinal_values(nodes, x):
