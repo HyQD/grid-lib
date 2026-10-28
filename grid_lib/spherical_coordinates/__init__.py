@@ -13,6 +13,7 @@ from .differential_operators import (
     SphericalNodalDifferentialOperator,
     SphericalVectorField,
 )
+from .multipole_potential import SphericalMultipolePotential
 from .potentials import (
     Coulomb,
     SAE,
@@ -35,6 +36,7 @@ __all__ = [
     "LM_to_I",
     "SphericalNodalDifferentialOperator",
     "SphericalVectorField",
+    "SphericalMultipolePotential",
     "angular_matrix_element",
     "Coulomb",
     "SAE",

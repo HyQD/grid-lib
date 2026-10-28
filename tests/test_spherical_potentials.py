@@ -93,7 +93,11 @@ def test_clamped_molecular_potential_poisson_assembles_components_from_W():
     for M in range(-M_max, M_max + 1):
         for L in range(abs(M), L_max + 1):
             I_LM = LM_to_I(L, M, L_max, M_max)
-            V_expected[I_LM] = -Ylm(L, M, theta, phi) * W[L, :, r_idx] / weights[r_idx]
+            V_expected[I_LM] = (
+                -np.conj(Ylm(L, M, theta, phi))
+                * W[L, :, r_idx]
+                / weights[r_idx]
+            )
 
     np.testing.assert_allclose(V_poisson, V_expected, atol=1e-14, rtol=1e-14)
 
