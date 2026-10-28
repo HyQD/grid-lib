@@ -171,7 +171,7 @@ def clamped_molecular_potential_quadrature(r, positions, charges, L_max, M_max=N
         for M in range(-M_max, M_max + 1):
             for L in range(abs(M), L_max + 1):
                 I_LM = LM_to_I(L, M, L_max, M_max)
-                angular_factor = Ylm(L, M, theta_R, phi_R)
+                angular_factor = np.conj(Ylm(L, M, theta_R, phi_R))
                 radial_factor = (r_min**L) / (r_max ** (L + 1))
                 V_LM[I_LM] += (
                     -charge * (4 * np.pi / (2 * L + 1)) * angular_factor * radial_factor
@@ -282,7 +282,7 @@ def clamped_molecular_potential_Poisson(
         for M in range(-M_max, M_max + 1):
             for L in range(abs(M), L_max + 1):
                 I_LM = LM_to_I(L, M, L_max, M_max)
-                angular_factor = Ylm(L, M, theta_R, phi_R)
+                angular_factor = np.conj(Ylm(L, M, theta_R, phi_R))
                 radial_factor = W[L, :, r_idx] / weights[r_idx]
                 V_LM[I_LM] += -charge * angular_factor * radial_factor
 
