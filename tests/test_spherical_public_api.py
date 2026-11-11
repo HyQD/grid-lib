@@ -9,11 +9,15 @@ def test_angular_momentum_helpers_are_publicly_exported():
     names = (
         "LM_to_I",
         "angular_matrix_element",
+        "clebsch_gordan",
+        "get_coupling_backend",
         "get_y",
         "get_y_value",
         "get_ybar",
         "get_ybar_value",
         "number_of_lm_states",
+        "set_coupling_backend",
+        "wigner_6j",
     )
 
     for name in names:

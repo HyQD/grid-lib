@@ -127,5 +127,5 @@ def test_scalar_y_helpers_match_tensor_entries():
 
 
 def test_scalar_y_helpers_enforce_selection_rules():
-    assert get_y_value(2, 1, 2, 1, 2, 0) == 0.0
-    assert get_ybar_value(2, 1, 2, 1, 2, 0) == 0.0
+    assert get_y_value(2, 1, 2, 1, 2, 1) == 0.0
+    assert get_ybar_value(2, 1, 2, 1, 2, 1) == 0.0

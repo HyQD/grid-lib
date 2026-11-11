@@ -1,7 +1,12 @@
 import numpy as np
-from sympy.physics.wigner import gaunt
+from sympy.physics.wigner import (
+    clebsch_gordan as _sympy_clebsch_gordan,
+    gaunt,
+    wigner_6j as _sympy_wigner_6j,
+)
 from numba import njit
 from functools import lru_cache
+from numbers import Integral
 from scipy.integrate import lebedev_rule
 from packaging import version
 import scipy
@@ -31,6 +36,7 @@ except Exception:
     _py3nj = None
 
 _ACTIVE_GAUNT_BACKEND = "auto"
+_ACTIVE_COUPLING_BACKEND = "auto"
 
 
 def angular_matrix_element(l1, m1, l2, m2, f, order=101):
@@ -178,9 +184,7 @@ def set_gaunt_backend(backend):
     """
 
     global _ACTIVE_GAUNT_BACKEND
-    mode = str(backend).strip().lower()
-    if mode not in ("auto", "sympy", "py3nj"):
-        raise ValueError("backend must be one of: auto, sympy, py3nj")
+    mode = _backend_mode(backend)
     if mode == "py3nj" and _py3nj is None:
         raise RuntimeError("Requested backend 'py3nj' is not available")
 
@@ -208,6 +212,91 @@ def get_gaunt_backend(resolve=False):
     if resolve and _ACTIVE_GAUNT_BACKEND == "auto":
         return "py3nj" if _py3nj is not None else "sympy"
     return _ACTIVE_GAUNT_BACKEND
+
+
+def set_coupling_backend(backend):
+    """Select the backend for angular-momentum coupling coefficients.
+
+    Parameters
+    ----------
+    backend : str
+        One of ``"auto"``, ``"sympy"``, or ``"py3nj"``.  Automatic mode
+        uses py3nj when it is available and otherwise falls back to SymPy.
+
+    Returns
+    -------
+    str
+        The selected backend mode.
+    """
+
+    global _ACTIVE_COUPLING_BACKEND
+    mode = _backend_mode(backend)
+    if mode == "py3nj" and _py3nj is None:
+        raise RuntimeError("Requested backend 'py3nj' is not available")
+
+    _ACTIVE_COUPLING_BACKEND = mode
+    _clebsch_gordan_cached.cache_clear()
+    _wigner_6j_cached.cache_clear()
+    return _ACTIVE_COUPLING_BACKEND
+
+
+def get_coupling_backend(resolve=False):
+    """Return the configured or effective coupling-coefficient backend."""
+
+    if resolve and _ACTIVE_COUPLING_BACKEND == "auto":
+        return "py3nj" if _py3nj is not None else "sympy"
+    return _ACTIVE_COUPLING_BACKEND
+
+
+def clebsch_gordan(j1, m1, j2, m2, J, M):
+    r"""Return ``<j1 m1, j2 m2 | J M>`` as a real scalar.
+
+    This interface currently accepts non-negative integer angular momenta and
+    integer projections.  It follows the Condon--Shortley convention used by
+    SymPy and py3nj.  Combinations forbidden by projection or triangle rules
+    return exactly zero.
+    """
+
+    j1 = _angular_momentum(j1, "j1")
+    j2 = _angular_momentum(j2, "j2")
+    J = _angular_momentum(J, "J")
+    m1 = _projection(m1, "m1")
+    m2 = _projection(m2, "m2")
+    M = _projection(M, "M")
+
+    if abs(m1) > j1 or abs(m2) > j2 or abs(M) > J:
+        return 0.0
+    if m1 + m2 != M:
+        return 0.0
+    if not _triangle(j1, j2, J):
+        return 0.0
+    return _clebsch_gordan_cached(j1, m1, j2, m2, J, M)
+
+
+def wigner_6j(j1, j2, j3, j4, j5, j6):
+    r"""Return the Wigner ``{j1 j2 j3; j4 j5 j6}`` symbol.
+
+    The arguments are non-negative integer angular momenta.  A combination
+    that violates any of the four triangle conditions returns exactly zero.
+    """
+
+    values = tuple(
+        _angular_momentum(value, name)
+        for value, name in zip(
+            (j1, j2, j3, j4, j5, j6),
+            ("j1", "j2", "j3", "j4", "j5", "j6"),
+        )
+    )
+    j1, j2, j3, j4, j5, j6 = values
+    triangles = (
+        (j1, j2, j3),
+        (j1, j5, j6),
+        (j4, j2, j6),
+        (j4, j5, j3),
+    )
+    if not all(_triangle(*triangle) for triangle in triangles):
+        return 0.0
+    return _wigner_6j_cached(*values)
 
 
 def number_of_lm_states(l_max, m_max):
@@ -270,7 +359,7 @@ def LM_to_I(L, M, L_max, M_max):
 
 
 def setup_y_and_ybar_sympy(l_max, m_max, L_max, M_max):
-    """
+    r"""
     Compute
 
              y (L,M,l1,m1,l2,m2) = \int Y^*_{l1,m1}(\Omega) Y_{L,M}(\Omega) Y_{l2,m2}(\Omega) d\Omega
@@ -326,6 +415,90 @@ def setup_y_and_ybar_sympy(l_max, m_max, L_max, M_max):
 
 def _scalarize(value):
     return float(np.asarray(value).reshape(-1)[0])
+
+
+def _backend_mode(backend):
+    mode = str(backend).strip().lower()
+    if mode not in ("auto", "sympy", "py3nj"):
+        raise ValueError("backend must be one of: auto, sympy, py3nj")
+    return mode
+
+
+def _angular_momentum(value, name):
+    if isinstance(value, bool) or not isinstance(value, Integral):
+        raise TypeError(f"{name} must be an integer")
+    result = int(value)
+    if result < 0:
+        raise ValueError(f"{name} must be non-negative")
+    return result
+
+
+def _projection(value, name):
+    if isinstance(value, bool) or not isinstance(value, Integral):
+        raise TypeError(f"{name} must be an integer")
+    return int(value)
+
+
+def _triangle(j1, j2, j3):
+    return abs(j1 - j2) <= j3 <= j1 + j2
+
+
+def _clebsch_gordan_sympy(j1, m1, j2, m2, J, M):
+    return float(_sympy_clebsch_gordan(j1, j2, J, m1, m2, M).n(64))
+
+
+def _clebsch_gordan_py3nj(j1, m1, j2, m2, J, M):
+    if _py3nj is None:
+        raise RuntimeError("py3nj is not available")
+    function = getattr(_py3nj, "clebsch_gordan", None)
+    if function is None:
+        raise AttributeError("py3nj does not expose clebsch_gordan")
+    return _scalarize(function(2 * j1, 2 * j2, 2 * J, 2 * m1, 2 * m2, 2 * M))
+
+
+@lru_cache(maxsize=None)
+def _clebsch_gordan_cached(j1, m1, j2, m2, J, M):
+    backend = get_coupling_backend()
+    if backend == "sympy":
+        return _clebsch_gordan_sympy(j1, m1, j2, m2, J, M)
+    if backend == "py3nj":
+        return _clebsch_gordan_py3nj(j1, m1, j2, m2, J, M)
+    if _py3nj is not None:
+        try:
+            return _clebsch_gordan_py3nj(j1, m1, j2, m2, J, M)
+        except Exception:
+            pass
+    return _clebsch_gordan_sympy(j1, m1, j2, m2, J, M)
+
+
+def _wigner_6j_sympy(j1, j2, j3, j4, j5, j6):
+    return float(_sympy_wigner_6j(j1, j2, j3, j4, j5, j6).n(64))
+
+
+def _wigner_6j_py3nj(j1, j2, j3, j4, j5, j6):
+    if _py3nj is None:
+        raise RuntimeError("py3nj is not available")
+    function = getattr(_py3nj, "wigner6j", None)
+    if function is None:
+        function = getattr(_py3nj, "wigner_6j", None)
+    if function is None:
+        raise AttributeError("py3nj does not expose wigner6j or wigner_6j")
+    return _scalarize(function(2 * j1, 2 * j2, 2 * j3, 2 * j4, 2 * j5, 2 * j6))
+
+
+@lru_cache(maxsize=None)
+def _wigner_6j_cached(j1, j2, j3, j4, j5, j6):
+    backend = get_coupling_backend()
+    if backend == "sympy":
+        return _wigner_6j_sympy(j1, j2, j3, j4, j5, j6)
+    if backend == "py3nj":
+        return _wigner_6j_py3nj(j1, j2, j3, j4, j5, j6)
+    if _py3nj is not None:
+        try:
+            return _wigner_6j_py3nj(j1, j2, j3, j4, j5, j6)
+        except Exception:
+            pass
+    return _wigner_6j_sympy(j1, j2, j3, j4, j5, j6)
 
 
 @lru_cache(maxsize=None)
