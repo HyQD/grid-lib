@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from numbers import Integral, Real
 
 import numpy as np
 from scipy.special import roots_jacobi
@@ -52,6 +53,40 @@ class ProlateSpheroidalGrid:
     def quadrature_weights_2d(self) -> np.ndarray:
         return self.xi_weights[:, np.newaxis] * self.eta_weights[np.newaxis, :]
 
+    def axial_coordinate(self) -> np.ndarray:
+        """Return the Cartesian ``z = a * xi * eta`` coordinate."""
+
+        xi, eta = self.mesh()
+        return self.a * xi * eta
+
+    def cylindrical_radius(self) -> np.ndarray:
+        """Return the cylindrical radius from the molecular axis."""
+
+        xi, eta = self.mesh()
+        return self.a * np.sqrt((xi**2 - 1.0) * (1.0 - eta**2))
+
+    def cartesian_radius(self) -> np.ndarray:
+        """Return the distance from the bond midpoint."""
+
+        xi, eta = self.mesh()
+        return self.a * np.sqrt(xi**2 + eta**2 - 1.0)
+
+    def focus_distances(self) -> tuple[np.ndarray, np.ndarray]:
+        """Return distances to the foci at ``z = -a`` and ``z = +a``."""
+
+        xi, eta = self.mesh()
+        return self.a * (xi + eta), self.a * (xi - eta)
+
+    def cartesian_coordinates(
+        self,
+        phi: Real = 0.0,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Return Cartesian coordinates on one fixed azimuthal half-plane."""
+
+        phi = _finite_real(phi, "phi")
+        rho = self.cylindrical_radius()
+        return rho * np.cos(phi), rho * np.sin(phi), self.axial_coordinate()
+
 
 @dataclass(frozen=True)
 class NodalDVRGrid:
@@ -82,25 +117,66 @@ def setup_prolate_spheroidal_grid(
     one-electron and Coulomb operators.
     """
 
-    if internuclear_distance <= 0.0:
-        raise ValueError("internuclear_distance must be positive.")
+    internuclear_distance = _positive_real(
+        internuclear_distance,
+        "internuclear_distance",
+    )
     if xi_max <= 1.0:
         raise ValueError("xi_max must be greater than 1.")
+    xi_elements = _positive_integer(xi_elements, "xi_elements")
+    xi_points = (
+        points_per_element
+        if xi_points_per_element is None
+        else xi_points_per_element
+    )
+    eta_points = (
+        eta_elements
+        * (
+            points_per_element
+            if eta_points_per_element is None
+            else eta_points_per_element
+        )
+        if eta_degree is None
+        else eta_degree
+    )
+    return setup_prolate_spheroidal_grid_from_boundaries(
+        internuclear_distance=internuclear_distance,
+        xi_boundaries=np.linspace(1.0, xi_max, xi_elements + 1),
+        xi_points_per_element=xi_points,
+        eta_degree=eta_points,
+    )
 
-    xi_grid = setup_radau_lobatto_femdvr_interval(
-        1.0,
-        xi_max,
-        n_elements=xi_elements,
-        points_per_element=xi_points_per_element or points_per_element,
+
+def setup_prolate_spheroidal_grid_from_boundaries(
+    internuclear_distance: float,
+    xi_boundaries: np.ndarray,
+    xi_points_per_element: int | np.ndarray = 8,
+    eta_degree: int = 8,
+) -> ProlateSpheroidalGrid:
+    """Create an axis-free prolate grid from explicit ``xi`` boundaries.
+
+    ``xi_points_per_element`` may be one integer shared by every element or
+    one integer per interval in ``xi_boundaries``. The first boundary must be
+    exactly one, as required by the prolate coordinate domain.
+    """
+
+    internuclear_distance = _positive_real(
+        internuclear_distance,
+        "internuclear_distance",
+    )
+    boundaries = _element_boundaries(xi_boundaries)
+    if boundaries[0] != 1.0:
+        raise ValueError("xi_boundaries must start at 1")
+    eta_degree = _positive_integer(eta_degree, "eta_degree")
+    xi_grid = setup_radau_lobatto_femdvr_interval_from_boundaries(
+        boundaries,
+        points_per_element=xi_points_per_element,
     )
     eta_grid = setup_gauss_legendre_interval(
         -1.0,
         1.0,
-        n_points=eta_degree
-        if eta_degree is not None
-        else eta_elements * (eta_points_per_element or points_per_element),
+        n_points=eta_degree,
     )
-
     return ProlateSpheroidalGrid(
         internuclear_distance=internuclear_distance,
         xi=np.asarray(xi_grid.r),
@@ -150,17 +226,15 @@ def setup_radau_lobatto_femdvr_interval(
 
 def setup_radau_lobatto_femdvr_interval_from_boundaries(
     element_boundaries: np.ndarray,
-    points_per_element: int,
+    points_per_element: int | np.ndarray,
 ) -> NodalDVRGrid:
     """Use right-Radau on the first element and GLL on later elements."""
 
-    element_boundaries = np.asarray(element_boundaries, dtype=float)
-    if element_boundaries.ndim != 1 or element_boundaries.size < 2:
-        raise ValueError("element_boundaries must be a one-dimensional array.")
-    if np.any(np.diff(element_boundaries) <= 0.0):
-        raise ValueError("element_boundaries must be strictly increasing.")
-    if points_per_element < 2:
-        raise ValueError("points_per_element must be at least 2.")
+    element_boundaries = _element_boundaries(element_boundaries)
+    point_counts = _element_point_counts(
+        points_per_element,
+        n_elements=element_boundaries.size - 1,
+    )
 
     local_points = []
     local_weights = []
@@ -168,14 +242,14 @@ def setup_radau_lobatto_femdvr_interval_from_boundaries(
     local_to_global = []
     global_points: list[float] = []
 
-    for element in range(element_boundaries.size - 1):
+    for element, n_points in enumerate(point_counts):
         if element == 0:
             standard_points, standard_weights = right_radau_nodes_weights(
-                points_per_element
+                n_points
             )
         else:
             gll = GaussLegendreLobatto(
-                points_per_element - 1,
+                n_points - 1,
                 Linear_map(-1.0, 1.0),
                 symmetrize=False,
             )
@@ -303,3 +377,59 @@ def lagrange_derivative_matrix(points: np.ndarray) -> np.ndarray:
                 )
         derivative[i, i] = -np.sum(derivative[i])
     return derivative
+
+
+def _element_boundaries(values: np.ndarray) -> np.ndarray:
+    boundaries = np.asarray(values, dtype=float)
+    if boundaries.ndim != 1 or boundaries.size < 2:
+        raise ValueError("element boundaries must be a one-dimensional array")
+    if not np.all(np.isfinite(boundaries)):
+        raise ValueError("element boundaries must be finite")
+    if np.any(np.diff(boundaries) <= 0.0):
+        raise ValueError("element boundaries must be strictly increasing")
+    return boundaries
+
+
+def _element_point_counts(values, *, n_elements: int) -> np.ndarray:
+    raw = np.asarray(values)
+    if raw.ndim == 0:
+        if isinstance(values, (bool, np.bool_)) or not isinstance(
+            values,
+            Integral,
+        ):
+            raise TypeError("points_per_element must contain integers")
+        counts = np.full(n_elements, int(values), dtype=int)
+    else:
+        if raw.shape != (n_elements,):
+            raise ValueError("points_per_element must contain one value per element")
+        if not np.issubdtype(raw.dtype, np.integer):
+            raise TypeError("points_per_element must contain integers")
+        counts = raw.astype(int, copy=False)
+    if np.any(counts < 2):
+        raise ValueError("points_per_element values must be at least 2")
+    return counts
+
+
+def _finite_real(value: Real, name: str) -> float:
+    if isinstance(value, (bool, np.bool_)) or not isinstance(value, Real):
+        raise TypeError(f"{name} must be a finite real scalar")
+    result = float(value)
+    if not np.isfinite(result):
+        raise ValueError(f"{name} must be a finite real scalar")
+    return result
+
+
+def _positive_real(value: Real, name: str) -> float:
+    result = _finite_real(value, name)
+    if result <= 0.0:
+        raise ValueError(f"{name} must be positive")
+    return result
+
+
+def _positive_integer(value: Integral, name: str) -> int:
+    if isinstance(value, (bool, np.bool_)) or not isinstance(value, Integral):
+        raise TypeError(f"{name} must be an integer")
+    result = int(value)
+    if result < 1:
+        raise ValueError(f"{name} must be at least 1")
+    return result

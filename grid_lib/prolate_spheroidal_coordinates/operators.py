@@ -181,6 +181,81 @@ def overlap_matrix(
     return sparse.diags(overlap_diagonal(grid), format="csr")
 
 
+def local_potential_diagonal(
+    grid: ProlateSpheroidalGrid,
+    potential: np.ndarray,
+    active_indices: np.ndarray | None = None,
+) -> np.ndarray:
+    """Return the weak diagonal for a pointwise local potential.
+
+    ``potential`` may have shape ``grid.shape`` or be flattened in C order.
+    Complex values are supported for absorbing potentials.
+    """
+
+    values = np.asarray(potential)
+    if not np.issubdtype(values.dtype, np.number):
+        raise TypeError("potential must be numeric")
+    if values.shape == grid.shape:
+        values = values.ravel()
+    elif values.shape != (grid.size,):
+        raise ValueError(
+            "potential must have shape grid.shape or be a flattened grid vector"
+        )
+    if not np.all(np.isfinite(values)):
+        raise ValueError("potential must contain only finite values")
+    diagonal = overlap_diagonal(grid) * values
+    if active_indices is not None:
+        diagonal = diagonal[np.asarray(active_indices)]
+    return diagonal
+
+
+def local_potential_matrix(
+    grid: ProlateSpheroidalGrid,
+    potential: np.ndarray,
+    active_indices: np.ndarray | None = None,
+) -> sparse.csr_matrix:
+    """Return the sparse weak matrix for a pointwise local potential."""
+
+    return sparse.diags(
+        local_potential_diagonal(
+            grid,
+            potential,
+            active_indices=active_indices,
+        ),
+        format="csr",
+    )
+
+
+def to_euclidean_coefficients(
+    grid: ProlateSpheroidalGrid,
+    coefficients: np.ndarray,
+    active_indices: np.ndarray | None = None,
+) -> np.ndarray:
+    """Map nodal coefficients to the Euclidean overlap representation."""
+
+    values, metric = _coefficients_and_metric(
+        grid,
+        coefficients,
+        active_indices=active_indices,
+    )
+    return values * np.sqrt(metric)
+
+
+def from_euclidean_coefficients(
+    grid: ProlateSpheroidalGrid,
+    coefficients: np.ndarray,
+    active_indices: np.ndarray | None = None,
+) -> np.ndarray:
+    """Map Euclidean coefficients back to nodal coefficients."""
+
+    values, metric = _coefficients_and_metric(
+        grid,
+        coefficients,
+        active_indices=active_indices,
+    )
+    return values / np.sqrt(metric)
+
+
 def centrifugal_diagonal(
     grid: ProlateSpheroidalGrid,
     m: int,
@@ -333,3 +408,37 @@ def restrict_diagonal(
     active_indices: np.ndarray,
 ) -> np.ndarray:
     return np.asarray(diagonal)[np.asarray(active_indices)]
+
+
+def _coefficients_and_metric(
+    grid: ProlateSpheroidalGrid,
+    coefficients: np.ndarray,
+    *,
+    active_indices: np.ndarray | None,
+) -> tuple[np.ndarray, np.ndarray]:
+    values = np.asarray(coefficients)
+    if not np.issubdtype(values.dtype, np.number):
+        raise TypeError("coefficients must be numeric")
+    if not np.all(np.isfinite(values)):
+        raise ValueError("coefficients must contain only finite values")
+
+    metric = overlap_diagonal(grid)
+    if active_indices is not None:
+        metric = metric[np.asarray(active_indices)]
+        if values.ndim < 1 or values.shape[-1] != metric.size:
+            raise ValueError(
+                "active coefficients must have the active-space size "
+                "on their final axis"
+            )
+        shape = (1,) * (values.ndim - 1) + (metric.size,)
+        return values, metric.reshape(shape)
+
+    if values.ndim >= 2 and values.shape[-2:] == grid.shape:
+        shape = (1,) * (values.ndim - 2) + grid.shape
+        return values, metric.reshape(shape)
+    if values.ndim >= 1 and values.shape[-1] == grid.size:
+        shape = (1,) * (values.ndim - 1) + (grid.size,)
+        return values, metric.reshape(shape)
+    raise ValueError(
+        "coefficients must end in grid.shape or the flattened grid size"
+    )
