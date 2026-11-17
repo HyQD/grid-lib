@@ -1,8 +1,10 @@
 import numpy as np
 import pytest
+from scipy import sparse
 
 from grid_lib.prolate_spheroidal_coordinates import (
     active_indices,
+    axial_momentum_matrix,
     from_euclidean_coefficients,
     local_potential_diagonal,
     local_potential_matrix,
@@ -210,3 +212,64 @@ def test_metric_transforms_validate_coefficient_shape(haxton_comparable_grid):
             haxton_comparable_grid,
             np.ones((2, 3)),
         )
+
+
+@pytest.mark.parametrize("m", [0, 1, -2])
+def test_axial_momentum_is_hermitian_in_weak_and_metric_forms(
+    haxton_comparable_grid,
+    m,
+):
+    grid = haxton_comparable_grid
+    active = active_indices(grid, m=m)
+    weak = axial_momentum_matrix(grid, m=m, active_indices=active)
+    metric = overlap_diagonal(grid)[active]
+
+    np.testing.assert_allclose(
+        weak.toarray(),
+        weak.getH().toarray(),
+        atol=2e-13,
+    )
+
+    inverse_metric = 1.0 / metric
+    strong = sparse.diags(inverse_metric) @ weak
+    np.testing.assert_allclose(
+        (sparse.diags(metric) @ strong).toarray(),
+        (strong.getH() @ sparse.diags(metric)).toarray(),
+        atol=2e-13,
+    )
+
+    inverse_sqrt_metric = sparse.diags(1.0 / np.sqrt(metric))
+    symmetric = inverse_sqrt_metric @ weak @ inverse_sqrt_metric
+    np.testing.assert_allclose(
+        symmetric.toarray(),
+        symmetric.getH().toarray(),
+        atol=2e-13,
+    )
+
+
+def test_axial_momentum_has_expected_inversion_selection_rule(
+    haxton_comparable_grid,
+):
+    grid = haxton_comparable_grid
+    active = active_indices(grid)
+    momentum = axial_momentum_matrix(grid, active_indices=active).toarray()
+    eta = grid.eta
+    eta_inversion = np.array(
+        [np.argmin(np.abs(eta + value)) for value in eta],
+        dtype=int,
+    )
+    full_inversion = np.arange(grid.size).reshape(grid.shape)[:, eta_inversion]
+    active_lookup = {full: index for index, full in enumerate(active)}
+    permutation = np.array(
+        [
+            active_lookup[full]
+            for full in full_inversion.ravel()
+            if full in active_lookup
+        ]
+    )
+
+    np.testing.assert_allclose(
+        momentum[np.ix_(permutation, permutation)],
+        -momentum,
+        atol=3e-13,
+    )

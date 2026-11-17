@@ -353,6 +353,80 @@ def kinetic_energy_matrix(
     return kinetic.tocsr()
 
 
+def axial_momentum_matrix(
+    grid: ProlateSpheroidalGrid,
+    m: int = 0,
+    active_indices: np.ndarray | None = None,
+) -> sparse.csr_matrix:
+    r"""Return the Hermitian weak-form axial momentum matrix.
+
+    The prolate-coordinate derivative is
+
+    .. math::
+
+        \partial_z =
+        \frac{\eta(\xi^2-1)}{a(\xi^2-\eta^2)}\partial_\xi
+        +
+        \frac{\xi(1-\eta^2)}{a(\xi^2-\eta^2)}\partial_\eta.
+
+    Multiplication by the volume element leaves a separable weak derivative
+    matrix.  Its anti-Hermitian part is used before multiplication by
+    ``-1j``.  This variational construction makes the returned momentum
+    matrix Hermitian in the weak representation, including on finite DVR
+    grids where a pointwise transformed derivative need not satisfy the
+    discrete integration-by-parts identity exactly.
+
+    The operator preserves ``m``.  If ``active_indices`` is supplied, the
+    outer-``xi`` Dirichlet restriction is applied to both matrix axes.
+    """
+
+    validate_axis_free_grid(grid)
+    xi_derivative = sparse.csr_matrix(xi_derivative_matrix(grid, m))
+    eta_derivative = sparse.csr_matrix(eta_derivative_matrix(grid, m))
+
+    xi_derivative_weak = (
+        sparse.diags(
+            grid.xi_weights * (grid.xi**2 - 1.0),
+            format="csr",
+        )
+        @ xi_derivative
+    )
+    eta_coordinate_weak = sparse.diags(
+        grid.eta_weights * grid.eta,
+        format="csr",
+    )
+
+    xi_coordinate_weak = sparse.diags(
+        grid.xi_weights * grid.xi,
+        format="csr",
+    )
+    eta_derivative_weak = (
+        sparse.diags(
+            grid.eta_weights * (1.0 - grid.eta**2),
+            format="csr",
+        )
+        @ eta_derivative
+    )
+
+    weak_derivative = grid.a**2 * (
+        sparse.kron(
+            xi_derivative_weak,
+            eta_coordinate_weak,
+            format="csr",
+        )
+        + sparse.kron(
+            xi_coordinate_weak,
+            eta_derivative_weak,
+            format="csr",
+        )
+    )
+    momentum = (-0.5j * (weak_derivative - weak_derivative.getH())).tocsr()
+    if active_indices is not None:
+        momentum = restrict_matrix(momentum, active_indices)
+    momentum.eliminate_zeros()
+    return momentum
+
+
 def active_mask(
     grid: ProlateSpheroidalGrid,
     m: int = 0,
