@@ -139,7 +139,9 @@ The main one-electron operator functions are:
 - `kinetic_energy_matrix`, which returns the weak kinetic matrix including
   the nonzero-`m` centrifugal contribution;
 - `electron_nuclear_coulomb_matrix`, which returns the weak two-centre
-  attraction matrix; and
+  attraction matrix;
+- `axial_momentum_matrix`, which returns the Hermitian weak matrix for
+  `p_z` in one fixed-`m` sector; and
 - `active_indices`, `restrict_matrix`, and `restrict_diagonal`, which define
   and apply an active-node map.
 
@@ -240,6 +242,44 @@ V_{\mathrm{en}}(\xi,\eta)
 `electron_nuclear_coulomb_diagonal` forms its weak diagonal analytically. The
 factor `(xi**2 - eta**2)` from the volume element cancels the apparent focal
 denominators, giving a finite weak expression on the axis-free grid.
+
+## Axial momentum
+
+For velocity-gauge fields parallel to the molecular axis, the coordinate
+derivative is
+
+```math
+\frac{\partial}{\partial z}
+=
+\frac{\eta(\xi^2-1)}{a(\xi^2-\eta^2)}
+\frac{\partial}{\partial\xi}
++
+\frac{\xi(1-\eta^2)}{a(\xi^2-\eta^2)}
+\frac{\partial}{\partial\eta}.
+```
+
+`axial_momentum_matrix(grid, m, active_indices)` constructs
+`p_z = -i partial_z` in weak form. Multiplying the expression above by the
+prolate volume element cancels the denominator and leaves two separable
+Kronecker products. The implementation takes the anti-Hermitian part of the
+discrete weak derivative before multiplying by `-i`. This variational
+symmetrization enforces the finite-grid integration-by-parts identity and
+makes the returned weak momentum matrix Hermitian.
+
+If `P` is this weak matrix and `S` is the diagonal overlap, the physical
+nodal action and Euclidean symmetric matrix are, respectively,
+
+```math
+p_z^{(\mathrm{strong})}=S^{-1}P,
+\qquad
+p_z^{(\mathrm{sym})}=S^{-1/2}PS^{-1/2}.
+```
+
+The first is Hermitian in the `S` metric and the second is ordinarily
+Hermitian. The operator preserves `m` and is odd under inversion. As with the
+kinetic energy, callers should pass the active-node map when imposing the
+outer-`xi` Dirichlet boundary. Temporal vector potentials, charges, masses,
+and gauge policy remain application-level concerns.
 
 ## Electron--electron Coulomb functionality
 
