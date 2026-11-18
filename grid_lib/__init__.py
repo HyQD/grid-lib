@@ -1,5 +1,10 @@
 from .version import __version__
 from .basis import BSplineRadialBasis
+from .multicenter import (
+    BeckeMulticenterPoisson,
+    BeckePartition,
+    MulticenterPoissonPotential,
+)
 from .spherical_coordinates import (
     Coulomb,
     SAE,
@@ -16,6 +21,9 @@ from .spherical_coordinates import (
 __all__ = [
     "__version__",
     "BSplineRadialBasis",
+    "BeckeMulticenterPoisson",
+    "BeckePartition",
+    "MulticenterPoissonPotential",
     "Coulomb",
     "SAE",
     "Gaussian_charge_distribution",

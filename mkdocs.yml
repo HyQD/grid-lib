@@ -23,6 +23,7 @@ nav:
   - API:
       - API Overview: api/index.md
       - Radial Bases: api/radial_basis.md
+      - Multicentre Coulomb: api/multicenter.md
       - Spherical Coordinates: api/spherical_coordinates.md
       - Cartesian Coordinates: api/cartesian_coordinates.md
       - Pseudospectral Grids: api/pseudospectral_grids.md
