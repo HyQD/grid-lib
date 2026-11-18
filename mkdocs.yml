@@ -22,6 +22,7 @@ nav:
       - STO Matrix Elements: notebooks/sto_matrix_elements.ipynb
   - API:
       - API Overview: api/index.md
+      - Radial Bases: api/radial_basis.md
       - Spherical Coordinates: api/spherical_coordinates.md
       - Cartesian Coordinates: api/cartesian_coordinates.md
       - Pseudospectral Grids: api/pseudospectral_grids.md
