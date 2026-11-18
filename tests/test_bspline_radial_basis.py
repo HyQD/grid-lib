@@ -165,6 +165,24 @@ def test_evaluation_rejects_wrong_interval_or_radii():
         basis.locate([np.nan])
 
 
+def test_interval_evaluation_clips_roundoff_at_finite_boundaries():
+    basis = BSplineRadialBasis([0.0, 1.0, 2.0], degree=5, continuity=3)
+    inner_roundoff = np.nextafter(0.0, -np.inf)
+    outer_roundoff = np.nextafter(2.0, np.inf)
+
+    inner_values = basis.evaluate_interval(0, [inner_roundoff])[:2]
+    outer_values = basis.evaluate_interval(1, [outer_roundoff])[:2]
+
+    for actual, expected in zip(
+        inner_values, basis.evaluate_interval(0, [0.0])[:2]
+    ):
+        np.testing.assert_array_equal(actual, expected)
+    for actual, expected in zip(
+        outer_values, basis.evaluate_interval(1, [2.0])[:2]
+    ):
+        np.testing.assert_array_equal(actual, expected)
+
+
 def test_public_topology_arrays_are_read_only():
     basis = BSplineRadialBasis([0.0, 1.0, 2.0], degree=5, continuity=3)
 

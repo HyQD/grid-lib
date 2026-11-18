@@ -166,7 +166,9 @@ class BSplineRadialBasis:
         """
 
         interval_index = self._validated_interval_index(interval_index)
-        radii = self._validated_radii(radii)
+        radii = np.asarray(radii, dtype=float)
+        if np.any(~np.isfinite(radii)):
+            raise ValueError("radii must be finite")
         left = self.nodes[interval_index]
         right = self.nodes[interval_index + 1]
         scale = max(1.0, abs(left), abs(right))
