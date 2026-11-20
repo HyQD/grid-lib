@@ -22,6 +22,10 @@
 
 ::: grid_lib.spherical_coordinates.angular_momentum.number_of_lm_states
 
+## Reduced-radial spherical-harmonic operators
+
+::: grid_lib.spherical_coordinates.reduced_radial_operators.SphericalReducedRadialOperators
+
 ## Nodal differential operators
 
 ::: grid_lib.spherical_coordinates.differential_operators.SphericalVectorField

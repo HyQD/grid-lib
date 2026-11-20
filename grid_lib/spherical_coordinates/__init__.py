@@ -31,6 +31,7 @@ from .radial_poisson import (
     solve_radial_Poisson_dvr,
     solve_radial_Poisson_femdvr_two_grid,
 )
+from .reduced_radial_operators import SphericalReducedRadialOperators
 
 __all__ = [
     "GaussLegendreFourierGrid",
@@ -41,6 +42,7 @@ __all__ = [
     "SphericalNodalDifferentialOperator",
     "SphericalVectorField",
     "SphericalMultipolePotential",
+    "SphericalReducedRadialOperators",
     "angular_matrix_element",
     "clebsch_gordan",
     "Coulomb",

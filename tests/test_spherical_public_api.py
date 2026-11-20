@@ -3,6 +3,9 @@ from grid_lib.spherical_coordinates import angular_momentum
 from grid_lib.spherical_coordinates.multipole_potential import (
     SphericalMultipolePotential,
 )
+from grid_lib.spherical_coordinates.reduced_radial_operators import (
+    SphericalReducedRadialOperators,
+)
 
 
 def test_angular_momentum_helpers_are_publicly_exported():
@@ -32,4 +35,12 @@ def test_spherical_multipole_potential_is_publicly_exported():
     assert (
         spherical_coordinates.SphericalMultipolePotential
         is SphericalMultipolePotential
+    )
+
+
+def test_spherical_reduced_radial_operators_are_publicly_exported():
+    assert "SphericalReducedRadialOperators" in spherical_coordinates.__all__
+    assert (
+        spherical_coordinates.SphericalReducedRadialOperators
+        is SphericalReducedRadialOperators
     )
