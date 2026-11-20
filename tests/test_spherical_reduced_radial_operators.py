@@ -79,9 +79,73 @@ def test_channel_order_and_angular_matrices_match_legacy_operator(
 def test_matrix_accessors_return_defensive_sparse_copies(operators):
     matrix = operators.cos_theta_matrix()
     matrix.data[:] = 0.0
+    coordinate = operators.coordinate_angular_matrix("x")
+    coordinate.data[:] = 0.0
+    radial, angular = operators.momentum_angular_matrices("y")
+    radial.data[:] = 0.0
+    angular.data[:] = 0.0
 
     assert operators.cos_theta_matrix().nnz > 0
     assert operators.sin_theta_dtheta_matrix(m=1).shape == (3, 3)
+    assert operators.coordinate_angular_matrix("x").nnz > 0
+    assert operators.momentum_angular_matrices("y")[0].nnz > 0
+    assert operators.momentum_angular_matrices("y")[1].nnz > 0
+
+
+def test_transverse_actions_on_an_s_orbital(operators):
+    radial_values = operators.r * (6.0 - operators.r)
+    radial_derivative = 6.0 - 2.0 * operators.r
+    derivative_tilde = radial_derivative - radial_values / operators.r
+    state = np.zeros(operators.orbital_shape)
+    channel_index = {
+        channel: index for index, channel in enumerate(operators.orbital_lm)
+    }
+    state[:, channel_index[(0, 0)]] = radial_values
+
+    expected_x = np.zeros_like(state, dtype=complex)
+    expected_y = np.zeros_like(state, dtype=complex)
+    expected_px = np.zeros_like(state, dtype=complex)
+    expected_py = np.zeros_like(state, dtype=complex)
+    for m_value, x_coefficient, y_coefficient in (
+        (-1, 1.0 / np.sqrt(6.0), 1.0j / np.sqrt(6.0)),
+        (1, -1.0 / np.sqrt(6.0), 1.0j / np.sqrt(6.0)),
+    ):
+        index = channel_index[(1, m_value)]
+        expected_x[:, index] = (
+            x_coefficient * operators.r * radial_values
+        )
+        expected_y[:, index] = (
+            y_coefficient * operators.r * radial_values
+        )
+        expected_px[:, index] = -1.0j * x_coefficient * derivative_tilde
+        expected_py[:, index] = -1.0j * y_coefficient * derivative_tilde
+
+    np.testing.assert_allclose(operators.apply_x(state), expected_x)
+    np.testing.assert_allclose(operators.apply_y(state), expected_y)
+    np.testing.assert_allclose(operators.apply_px(state), expected_px)
+    np.testing.assert_allclose(operators.apply_py(state), expected_py)
+
+
+def test_cartesian_coordinate_norm_identity_away_from_cutoff(operators):
+    generator = np.random.default_rng(51)
+    state = np.zeros(operators.orbital_shape, dtype=complex)
+    for index, (l_value, _) in enumerate(operators.orbital_lm):
+        if l_value <= operators.l_max - 2:
+            state[:, index] = generator.normal(size=operators.r.size) + (
+                1.0j * generator.normal(size=operators.r.size)
+            )
+
+    radius_squared = sum(
+        action(action(state))
+        for action in (operators.apply_x, operators.apply_y, operators.apply_z)
+    )
+    expected = operators.r[:, None] ** 2 * state
+    np.testing.assert_allclose(
+        radius_squared,
+        expected,
+        atol=5.0e-14,
+        rtol=5.0e-14,
+    )
 
 
 def test_actions_have_analytic_selection_rules_and_radial_terms(operators):
@@ -149,7 +213,10 @@ def test_full_and_fixed_m_actions_agree_for_complex_batches(operators, m):
     np.testing.assert_allclose(full_pz[..., complement], 0.0, atol=2.0e-14)
 
 
-@pytest.mark.parametrize("action_name", ["apply_z", "apply_pz"])
+@pytest.mark.parametrize(
+    "action_name",
+    ["apply_x", "apply_y", "apply_z", "apply_px", "apply_py", "apply_pz"],
+)
 def test_actions_are_hermitian_in_the_femdvr_metric(
     operators, femdvr_data, action_name
 ):
@@ -208,3 +275,6 @@ def test_state_validation(operators):
         invalid = np.zeros(operators.orbital_shape)
         invalid[0, 0] = np.nan
         operators.apply_z(invalid)
+
+    with pytest.raises(ValueError, match="component"):
+        operators.coordinate_angular_matrix("invalid")

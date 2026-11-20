@@ -26,6 +26,8 @@
 
 ::: grid_lib.spherical_coordinates.reduced_radial_operators.SphericalReducedRadialOperators
 
+::: grid_lib.spherical_coordinates.rotation.SphericalHarmonicRotation
+
 ## Nodal differential operators
 
 ::: grid_lib.spherical_coordinates.differential_operators.SphericalVectorField

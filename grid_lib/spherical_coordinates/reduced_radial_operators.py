@@ -3,7 +3,9 @@
 from numbers import Integral
 
 import numpy as np
-from scipy.sparse import csr_matrix
+from scipy.sparse import coo_matrix, csr_matrix, diags
+
+from .angular_momentum import get_y_value
 
 
 def _angular_cutoffs(l_max, m_max):
@@ -31,7 +33,7 @@ def _lm_states(l_max, m_max):
 
 
 class SphericalReducedRadialOperators:
-    r"""Apply axial coordinate operators to reduced-radial expansions.
+    r"""Apply Cartesian operators to reduced-radial expansions.
 
     States use the convention
 
@@ -58,17 +60,21 @@ class SphericalReducedRadialOperators:
 
     Notes
     -----
-    The implemented actions are ``z = r cos(theta)`` and
-    ``p_z = -i partial_z``. For the reduced radial functions,
+    The implemented actions are the Cartesian coordinates ``x``, ``y``,
+    ``z`` and momenta ``p_x``, ``p_y``, ``p_z``. For a Cartesian component
+    ``i`` and reduced radial functions,
 
     .. math::
 
-        \partial_z
-        = C\left(\partial_r-\frac{1}{r}\right)
-          -\frac{B}{r},
+        p_i
+        = -i N_i\left(\partial_r-\frac{1}{r}\right)
+          -\frac{(\hat{\mathbf r}\times\mathbf L)_i}{r},
 
-    where ``C`` represents ``cos(theta)`` and ``B`` represents
-    ``sin(theta) partial_theta`` in the spherical-harmonic basis.
+    where ``N_i`` represents the direction cosine ``r_i/r``. The axial
+    implementation retains the equivalent legacy matrices ``cos(theta)``
+    and ``sin(theta) partial_theta`` for compatibility and fixed-``m``
+    actions. Transverse components mix signed magnetic channels and therefore
+    act only on full-angular states.
     """
 
     def __init__(self, r, first_derivative, *, l_max, m_max=None):
@@ -110,6 +116,9 @@ class SphericalReducedRadialOperators:
             self._cos_theta,
             self._sin_theta_dtheta,
         ) = self._build_angular_matrices()
+        self._direction_cosines = self._build_direction_cosines()
+        self._angular_momentum = self._build_angular_momentum_matrices()
+        self._cross_angular = self._build_cross_angular_matrices()
         self._fixed_m_indices = {}
         self._fixed_m_angular = {}
 
@@ -155,6 +164,83 @@ class SphericalReducedRadialOperators:
             (derivative_coefficients, (rows, columns)), shape=shape
         )
         return cos_theta, sin_theta_dtheta
+
+    def _spherical_direction_matrix(self, projection):
+        rows = []
+        columns = []
+        coefficients = []
+        normalization = np.sqrt(4.0 * np.pi / 3.0)
+        for column, (l_input, m_input) in enumerate(self.orbital_lm):
+            m_output = m_input + projection
+            if abs(m_output) > self.m_max:
+                continue
+            for l_output in (l_input - 1, l_input + 1):
+                output = (l_output, m_output)
+                if output not in self._channel_index:
+                    continue
+                value = normalization * get_y_value(
+                    1,
+                    projection,
+                    l_output,
+                    m_output,
+                    l_input,
+                    m_input,
+                )
+                if value != 0.0:
+                    rows.append(self._channel_index[output])
+                    columns.append(column)
+                    coefficients.append(value)
+        shape = (len(self.orbital_lm),) * 2
+        return coo_matrix(
+            (coefficients, (rows, columns)), shape=shape
+        ).tocsr()
+
+    def _build_direction_cosines(self):
+        negative = self._spherical_direction_matrix(-1)
+        positive = self._spherical_direction_matrix(1)
+        x_component = (negative - positive) / np.sqrt(2.0)
+        y_component = 1.0j * (negative + positive) / np.sqrt(2.0)
+        return (
+            x_component.tocsr(),
+            y_component.tocsr(),
+            self._cos_theta,
+        )
+
+    def _build_angular_momentum_matrices(self):
+        rows = []
+        columns = []
+        coefficients = []
+        magnetic_values = []
+        for column, (l_value, m_value) in enumerate(self.orbital_lm):
+            magnetic_values.append(m_value)
+            raised = (l_value, m_value + 1)
+            if raised in self._channel_index:
+                rows.append(self._channel_index[raised])
+                columns.append(column)
+                coefficients.append(
+                    np.sqrt(
+                        l_value * (l_value + 1)
+                        - m_value * (m_value + 1)
+                    )
+                )
+        shape = (len(self.orbital_lm),) * 2
+        raising = coo_matrix(
+            (coefficients, (rows, columns)), shape=shape
+        ).tocsr()
+        lowering = raising.T.conj()
+        x_component = 0.5 * (raising + lowering)
+        y_component = (raising - lowering) / (2.0j)
+        z_component = diags(magnetic_values, dtype=complex, format="csr")
+        return x_component, y_component, z_component
+
+    def _build_cross_angular_matrices(self):
+        nx, ny, nz = self._direction_cosines
+        lx, ly, lz = self._angular_momentum
+        return (
+            (ny @ lz - nz @ ly).tocsr(),
+            (nz @ lx - nx @ lz).tocsr(),
+            (-1.0j * self._sin_theta_dtheta).tocsr(),
+        )
 
     def _validated_m(self, m):
         if isinstance(m, (bool, np.bool_)) or not isinstance(m, Integral):
@@ -205,6 +291,27 @@ class SphericalReducedRadialOperators:
 
         return self._angular_matrix("sin_theta_dtheta", m).copy()
 
+    @staticmethod
+    def _cartesian_component(component):
+        if component not in {"x", "y", "z"}:
+            raise ValueError("component must be 'x', 'y', or 'z'")
+        return {"x": 0, "y": 1, "z": 2}[component]
+
+    def coordinate_angular_matrix(self, component):
+        """Return a sparse direction-cosine matrix for one component."""
+
+        index = self._cartesian_component(component)
+        return self._direction_cosines[index].copy()
+
+    def momentum_angular_matrices(self, component):
+        r"""Return defensive ``(N_i, (rhat cross L)_i)`` sparse matrices."""
+
+        index = self._cartesian_component(component)
+        return (
+            self._direction_cosines[index].copy(),
+            self._cross_angular[index].copy(),
+        )
+
     def fixed_m_shape(self, m):
         """Return the radial-first state shape for signed magnetic number ``m``."""
 
@@ -237,12 +344,30 @@ class SphericalReducedRadialOperators:
         flat = values.reshape(-1, values.shape[-1])
         return matrix.dot(flat.T).T.reshape(values.shape)
 
-    def _apply_z(self, values, cos_theta):
-        result = self._apply_angular(values, cos_theta)
+    def _apply_coordinate(self, values, direction_cosine):
+        result = self._apply_angular(values, direction_cosine)
         radial_shape = (1,) * (values.ndim - 2) + (self.r.size, 1)
         return result * self.r.reshape(radial_shape)
 
-    def _apply_pz(self, values, cos_theta, sin_theta_dtheta):
+    def _apply_momentum(self, values, direction_cosine, cross_angular):
+        derivative = np.einsum(
+            "ab,...bj->...aj",
+            self.first_derivative,
+            values,
+            optimize=True,
+        )
+        radial_shape = (1,) * (values.ndim - 2) + (self.r.size, 1)
+        divided = values / self.r.reshape(radial_shape)
+        derivative_tilde = derivative - divided
+        radial = -1.0j * self._apply_angular(
+            derivative_tilde, direction_cosine
+        )
+        angular = self._apply_angular(divided, cross_angular)
+        return radial - angular
+
+    def _apply_axial_momentum(
+        self, values, cos_theta, sin_theta_dtheta
+    ):
         derivative = np.einsum(
             "ab,...bj->...aj",
             self.first_derivative,
@@ -254,25 +379,59 @@ class SphericalReducedRadialOperators:
         derivative_tilde = derivative - divided
         result = self._apply_angular(derivative_tilde, cos_theta)
         result -= self._apply_angular(divided, sin_theta_dtheta)
-        return -1j * result
+        return -1.0j * result
+
+    def apply_x(self, states):
+        r"""Apply ``x = r sin(theta) cos(phi)`` to full-angular states."""
+
+        values = self.validate_state(states)
+        return self._apply_coordinate(values, self._direction_cosines[0])
+
+    def apply_y(self, states):
+        r"""Apply ``y = r sin(theta) sin(phi)`` to full-angular states."""
+
+        values = self.validate_state(states)
+        return self._apply_coordinate(values, self._direction_cosines[1])
 
     def apply_z(self, states):
         r"""Apply ``z = r cos(theta)`` to full angular expansions."""
 
         values = self.validate_state(states)
-        return self._apply_z(values, self._cos_theta)
+        return self._apply_coordinate(values, self._direction_cosines[2])
 
     def apply_z_fixed_m(self, states, m=0):
         r"""Apply ``z = r cos(theta)`` in one signed-``m`` block."""
 
         values = self.validate_fixed_m_state(states, m)
-        return self._apply_z(values, self._angular_matrix("cos_theta", m))
+        return self._apply_coordinate(
+            values, self._angular_matrix("cos_theta", m)
+        )
+
+    def apply_px(self, states):
+        r"""Apply ``p_x = -i partial_x`` to full-angular states."""
+
+        values = self.validate_state(states)
+        return self._apply_momentum(
+            values,
+            self._direction_cosines[0],
+            self._cross_angular[0],
+        )
+
+    def apply_py(self, states):
+        r"""Apply ``p_y = -i partial_y`` to full-angular states."""
+
+        values = self.validate_state(states)
+        return self._apply_momentum(
+            values,
+            self._direction_cosines[1],
+            self._cross_angular[1],
+        )
 
     def apply_pz(self, states):
         r"""Apply ``p_z = -i partial_z`` to full angular expansions."""
 
         values = self.validate_state(states)
-        return self._apply_pz(
+        return self._apply_axial_momentum(
             values,
             self._cos_theta,
             self._sin_theta_dtheta,
@@ -282,7 +441,7 @@ class SphericalReducedRadialOperators:
         r"""Apply ``p_z = -i partial_z`` in one signed-``m`` block."""
 
         values = self.validate_fixed_m_state(states, m)
-        return self._apply_pz(
+        return self._apply_axial_momentum(
             values,
             self._angular_matrix("cos_theta", m),
             self._angular_matrix("sin_theta_dtheta", m),
