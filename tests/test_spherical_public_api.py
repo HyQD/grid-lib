@@ -6,6 +6,7 @@ from grid_lib.spherical_coordinates.multipole_potential import (
 from grid_lib.spherical_coordinates.reduced_radial_operators import (
     SphericalReducedRadialOperators,
 )
+from grid_lib.spherical_coordinates.rotation import SphericalHarmonicRotation
 
 
 def test_angular_momentum_helpers_are_publicly_exported():
@@ -43,4 +44,12 @@ def test_spherical_reduced_radial_operators_are_publicly_exported():
     assert (
         spherical_coordinates.SphericalReducedRadialOperators
         is SphericalReducedRadialOperators
+    )
+
+
+def test_spherical_harmonic_rotation_is_publicly_exported():
+    assert "SphericalHarmonicRotation" in spherical_coordinates.__all__
+    assert (
+        spherical_coordinates.SphericalHarmonicRotation
+        is SphericalHarmonicRotation
     )

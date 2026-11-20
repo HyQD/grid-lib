@@ -36,6 +36,24 @@ $$
 
 This decomposition is the basis for several operators implemented in the spherical-coordinate modules.
 
+## Cartesian operators and rotations
+
+`SphericalReducedRadialOperators` acts directly on the reduced-radial
+coefficients and provides all three Cartesian coordinates and momenta:
+`apply_x`, `apply_y`, `apply_z`, `apply_px`, `apply_py`, and `apply_pz`.
+The transverse actions mix signed magnetic channels, while the axial actions
+also provide optimized fixed-`m` variants.
+
+`SphericalHarmonicRotation` applies an active proper Cartesian rotation to a
+complete complex spherical-harmonic space. It follows
+
+$$
+(U(R)\Psi)(\mathbf r)=\Psi(R^{-1}\mathbf r)
+$$
+
+and uses the library's signed-`m`-then-`l` channel ordering. General rotations
+require every `m=-l,...,l` for each retained `l`.
+
 ## Gauss-Legendre-Fourier angular grid
 
 `GaussLegendreFourierGrid` combines Gauss-Legendre nodes in
